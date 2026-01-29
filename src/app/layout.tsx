@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import "./globals.css";
+import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -9,8 +10,8 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Dashboard principal",
+  title: "Kanban Hub",
+  description: "Gestión de tareas con Kanban",
 };
 
 export default function RootLayout({
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${figtree.variable} font-sans antialiased`}>
-        {children}
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
