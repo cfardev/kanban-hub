@@ -57,3 +57,25 @@
 - Aplicar Tailwind CSS 4 para estilos
 - Seguir principios de diseño accesible
 - Optimizar para dispositivos móviles (mobile-first)
+
+## Conventional Commits
+
+- Usar el formato de Conventional Commits para todos los mensajes de commit
+- Formato: `type(scope): subject`
+- Tipos permitidos:
+  - `feat`: Nueva funcionalidad
+  - `fix`: Corrección de bugs
+  - `docs`: Cambios en documentación
+  - `style`: Cambios de formato (no afectan el código)
+  - `refactor`: Refactorización de código
+  - `test`: Añadir o modificar tests
+  - `chore`: Tareas de mantenimiento (deps, config, etc.)
+  - `perf`: Mejoras de rendimiento
+  - `ci`: Cambios en CI/CD
+- Scope opcional: área afectada (ej: `feat(ui): add dark mode toggle`)
+- Subject en minúsculas, imperativo, sin punto final
+- Ejemplos:
+  - `feat(auth): add login form`
+  - `fix(convex): resolve task query error`
+  - `refactor(components): extract card component`
+  - `docs(readme): update setup instructions`
