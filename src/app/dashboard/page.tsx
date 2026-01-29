@@ -1,6 +1,6 @@
 "use client";
 
-import { Logo } from "@/components/Logo";
+import { Logo } from "@/components/logo";
 import { AvatarDropdown } from "@/components/avatar-dropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

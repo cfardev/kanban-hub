@@ -6,7 +6,7 @@ import { betterAuth } from "better-auth";
 import { components } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
-import schema from "@/convex/betterAuth/schema";
+import schema from "@/convex/better-auth/schema";
 
 // Better Auth Component
 export const authComponent = createClient<DataModel, typeof schema>(components.betterAuth, {
