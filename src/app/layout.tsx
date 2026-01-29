@@ -24,9 +24,7 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={`${figtree.variable} font-sans antialiased`}>
-        <ConvexClientProvider initialToken={token}>
-          {children}
-        </ConvexClientProvider>
+        <ConvexClientProvider initialToken={token}>{children}</ConvexClientProvider>
       </body>
     </html>
   );

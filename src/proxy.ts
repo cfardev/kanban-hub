@@ -1,19 +1,42 @@
-import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth-server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  const hasToken = await isAuthenticated();
+  const { pathname } = request.nextUrl;
 
-  // THIS IS NOT SECURE!
-  // This is the recommended approach to optimistically redirect users
-  // We recommend handling auth checks in each page/route
-  if (!hasToken) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  // Allow public access to auth routes and API routes
+  if (
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.next();
+  }
+
+  // Protect dashboard and nested routes
+  if (pathname.startsWith("/dashboard")) {
+    const hasToken = await isAuthenticated();
+
+    if (!hasToken) {
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard"], // Specify the routes the middleware applies to
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

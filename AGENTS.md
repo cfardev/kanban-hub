@@ -15,12 +15,14 @@
 
 ## Code Style
 
+- For files use lower kebab case for file names and folders
 - Use Biome for linting and formatting (DO NOT use ESLint or Prettier)
 - Follow Next.js App Router conventions
 - Use strict TypeScript
 - Functional components with React hooks
 - Prefer server components when possible
 - Use Shadcn/ui for common UI components
+- Install the shadcn/ui components using the command: `pnpm dlx shadcn@latest add <component>`
 
 ## Structure and Conventions
 
@@ -44,6 +46,7 @@
 - Use actions for async operations or external calls
 - Implement validation in mutations and actions
 - Use indexes when necessary to optimize queries
+- Use lower snake case for table names and fields
 
 ## Authentication
 

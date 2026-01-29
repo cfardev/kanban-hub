@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { tables as betterAuthTables } from "./betterAuth/schema";
 
 export default defineSchema({
   tasks: defineTable({
@@ -22,6 +21,6 @@ export default defineSchema({
     createdAt: v.optional(v.number()),
   }),
 
-  // Better Auth tables
-  ...betterAuthTables,
+  // Better Auth tables are managed by the betterAuth component
+  // and should not be added here to avoid duplication
 });
