@@ -1,80 +1,80 @@
 # Project Instructions
 
-## Stack Tecnológico
+## Tech Stack
 
-- **Next.js**: Usar la última versión con App Router
-- **React**: Usar la última versión
-- **Tailwind CSS**: Usar Tailwind CSS 4
-- **TypeScript**: Usar la última versión
-- **Shadcn/ui**: Componentes UI basados en Radix UI
-- **Convex**: Backend en tiempo real (queries, mutations, actions)
-- **Better Auth**: Sistema de autenticación
-- **Vitest**: Framework de testing
-- **Testing Library**: Para tests de componentes React
-- **Biome**: Linting y formatting (reemplaza ESLint y Prettier)
+- **Next.js**: Use the latest version with App Router
+- **React**: Use the latest version
+- **Tailwind CSS**: Use Tailwind CSS 4
+- **TypeScript**: Use the latest version
+- **Shadcn/ui**: UI components based on Radix UI
+- **Convex**: Real-time backend (queries, mutations, actions)
+- **Better Auth**: Authentication system
+- **Vitest**: Testing framework
+- **Testing Library**: For React component tests
+- **Biome**: Linting and formatting (replaces ESLint and Prettier)
 
 ## Code Style
 
-- Usar Biome para linting y formatting (NO usar ESLint o Prettier)
-- Seguir las convenciones de Next.js App Router
-- Usar TypeScript estricto
-- Componentes funcionales con hooks de React
-- Preferir server components cuando sea posible
-- Usar Shadcn/ui para componentes UI comunes
+- Use Biome for linting and formatting (DO NOT use ESLint or Prettier)
+- Follow Next.js App Router conventions
+- Use strict TypeScript
+- Functional components with React hooks
+- Prefer server components when possible
+- Use Shadcn/ui for common UI components
 
-## Estructura y Convenciones
+## Structure and Conventions
 
-- **Componentes**: Colocar en `components/` usando PascalCase
-- **Utilidades**: Colocar en `lib/` usando camelCase
-- **Convex**: Colocar queries/mutations/actions en `convex/`
-- **Tests**: Colocar junto a los archivos con extensión `.test.ts` o `.test.tsx`
-- **Rutas**: Usar App Router de Next.js (carpetas `app/`)
+- **Components**: Place in `components/` using PascalCase
+- **Utilities**: Place in `lib/` using camelCase
+- **Convex**: Place queries/mutations/actions in `convex/`
+- **Tests**: Place next to files with `.test.ts` or `.test.tsx` extension
+- **Routes**: Use Next.js App Router (folders in `app/`)
 
 ## Testing
 
-- Usar Vitest para tests unitarios
-- Usar Testing Library para tests de componentes
-- Escribir tests para lógica crítica y componentes complejos
-- Seguir el patrón Arrange-Act-Assert
+- Use Vitest for unit tests
+- Use Testing Library for component tests
+- Write tests for critical logic and complex components
+- Follow the Arrange-Act-Assert pattern
 
 ## Backend (Convex)
 
-- Usar queries para lectura de datos
-- Usar mutations para escritura de datos
-- Usar actions para operaciones asíncronas o llamadas externas
-- Implementar validación en mutations y actions
-- Usar índices cuando sea necesario para optimizar queries
+- Use queries for data reading
+- Use mutations for data writing
+- Use actions for async operations or external calls
+- Implement validation in mutations and actions
+- Use indexes when necessary to optimize queries
 
-## Autenticación
+## Authentication
 
-- Usar Better Auth para gestión de sesiones
-- Proteger rutas y acciones según sea necesario
-- Usar middleware cuando sea apropiado
+- Use Better Auth for session management
+- Protect routes and actions as needed
+- Use middleware when appropriate
 
 ## UI/UX
 
-- Usar componentes de Shadcn/ui como base
-- Aplicar Tailwind CSS 4 para estilos
-- Seguir principios de diseño accesible
-- Optimizar para dispositivos móviles (mobile-first)
+- Use Shadcn/ui components as base
+- Apply Tailwind CSS 4 for styles
+- Follow accessible design principles
+- Optimize for mobile devices (mobile-first)
 
 ## Conventional Commits
 
-- Usar el formato de Conventional Commits para todos los mensajes de commit
-- Formato: `type(scope): subject`
-- Tipos permitidos:
-  - `feat`: Nueva funcionalidad
-  - `fix`: Corrección de bugs
-  - `docs`: Cambios en documentación
-  - `style`: Cambios de formato (no afectan el código)
-  - `refactor`: Refactorización de código
-  - `test`: Añadir o modificar tests
-  - `chore`: Tareas de mantenimiento (deps, config, etc.)
-  - `perf`: Mejoras de rendimiento
-  - `ci`: Cambios en CI/CD
-- Scope opcional: área afectada (ej: `feat(ui): add dark mode toggle`)
-- Subject en minúsculas, imperativo, sin punto final
-- Ejemplos:
+- Use Conventional Commits format for all commit messages
+- Format: `type(scope): subject`
+- Allowed types:
+  - `feat`: New feature
+  - `fix`: Bug fix
+  - `docs`: Documentation changes
+  - `style`: Formatting changes (don't affect code)
+  - `refactor`: Code refactoring
+  - `test`: Add or modify tests
+  - `chore`: Maintenance tasks (deps, config, etc.)
+  - `perf`: Performance improvements
+  - `ci`: CI/CD changes
+- Optional scope: affected area (e.g., `feat(ui): add dark mode toggle`)
+- Subject in lowercase, imperative, no trailing period
+- Examples:
   - `feat(auth): add login form`
   - `fix(convex): resolve task query error`
   - `refactor(components): extract card component`

@@ -1,49 +1,50 @@
 # Kanban Hub
 
-Una plataforma para crear y gestionar múltiples paneles kanban con colaboración en tiempo real.
+A platform to create and manage multiple kanban boards with real-time collaboration.
 
-## Características
+## Features
 
-- Múltiples paneles kanban
-- Colaboración en tiempo real
-- Autenticación de usuarios
-- Interfaz moderna y responsive
+- Multiple kanban boards
+- Real-time collaboration
+- User authentication
+- Modern and responsive interface
 
-## Stack Tecnológico
+## Tech Stack
 
 - **Framework**: Next.js (App Router)
 - **UI**: Shadcn/ui + Tailwind CSS 4
 - **Backend**: Convex
-- **Autenticación**: Better Auth
+- **Authentication**: Better Auth
 - **Testing**: Vitest + Testing Library
 - **Linting/Formatting**: Biome
 
-## Desarrollo
+## Development
 
 ```bash
-# Instalar dependencias
+# Install dependencies
 pnpm install
 
-# Ejecutar en desarrollo
+# Run in development
 pnpm dev
 
-# Ejecutar tests
+# Run tests
 pnpm test
 
-# Build para producción
+# Build for production
 pnpm build
-```
-# Linting y formatting
+
+# Linting and formatting
 pnpm lint
+```
 
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 kanban-hub/
 ├── app/              # Next.js App Router
-├── components/       # Componentes React (Shadcn/ui)
-├── lib/              # Utilidades y helpers
-├── convex/           # Backend Convex (queries, mutations, actions)
-└── tests/            # Tests unitarios
+├── components/       # React components (Shadcn/ui)
+├── lib/              # Utilities and helpers
+├── convex/           # Convex backend (queries, mutations, actions)
+└── tests/            # Unit tests
 ```
