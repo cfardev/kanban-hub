@@ -60,6 +60,7 @@
 - Apply Tailwind CSS 4 for styles
 - Follow accessible design principles
 - Optimize for mobile devices (mobile-first)
+- Every object clickeable should haver cursor-pointer class
 
 ## Conventional Commits
 

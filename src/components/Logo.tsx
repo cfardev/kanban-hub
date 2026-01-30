@@ -16,7 +16,7 @@ export function Logo({ className = "", href }: LogoProps) {
 
   if (href) {
     return (
-      <Link href={href} className="inline-block">
+      <Link href={href} className="inline-block cursor-pointer">
         {content}
       </Link>
     );

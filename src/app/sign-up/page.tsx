@@ -164,7 +164,7 @@ export default function SignUpPage() {
             </Button>
             <div className="text-center text-xs text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/sign-in" className="text-primary underline-offset-4 hover:underline">
+              <Link href="/sign-in" className="cursor-pointer text-primary underline-offset-4 hover:underline">
                 Sign in
               </Link>
             </div>
