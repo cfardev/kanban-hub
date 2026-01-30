@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { SiGoogle } from "react-icons/si";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -158,6 +159,7 @@ export default function SignUpPage() {
                 });
               }}
             >
+              <SiGoogle className="shrink-0" aria-hidden />
               Google
             </Button>
             <div className="text-center text-xs text-muted-foreground">
