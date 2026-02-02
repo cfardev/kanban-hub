@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as boards from "../boards.js";
 import type * as http from "../http.js";
+import type * as profile from "../profile.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -23,6 +24,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   boards: typeof boards;
   http: typeof http;
+  profile: typeof profile;
   tasks: typeof tasks;
 }>;
 

@@ -1,3 +1,5 @@
+import type { QueryCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -7,9 +9,35 @@ function isValidStatus(s: string): s is (typeof VALID_STATUSES)[number] {
   return VALID_STATUSES.includes(s as (typeof VALID_STATUSES)[number]);
 }
 
+async function requireIdentity(ctx: QueryCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Not authenticated");
+  }
+  return identity;
+}
+
+async function assertBoardOwnership(
+  ctx: QueryCtx,
+  boardId: Id<"boards">,
+  ownerId: string
+) {
+  const board = await ctx.db.get(boardId);
+  if (!board?.active || board.owner_id !== ownerId) {
+    throw new Error("Board not found");
+  }
+  return board;
+}
+
 export const listByBoard = query({
   args: { boardId: v.id("boards") },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const board = await ctx.db.get(args.boardId);
+    if (!board?.active || board.owner_id !== identity.subject) {
+      return [];
+    }
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_board", (q) => q.eq("board_id", args.boardId))
@@ -32,10 +60,8 @@ export const create = mutation({
     if (!isValidStatus(args.status)) {
       throw new Error("Invalid status");
     }
-    const board = await ctx.db.get(args.boardId);
-    if (!board?.active) {
-      throw new Error("Board not found");
-    }
+    const identity = await requireIdentity(ctx);
+    await assertBoardOwnership(ctx, args.boardId, identity.subject);
     const existing = await ctx.db
       .query("tasks")
       .withIndex("by_board_status", (q) =>
@@ -72,6 +98,10 @@ export const update = mutation({
     if (updates.status !== undefined && !isValidStatus(updates.status)) {
       throw new Error("Invalid status");
     }
+    const identity = await requireIdentity(ctx);
+    const task = await ctx.db.get(id);
+    if (!task) throw new Error("Task not found");
+    await assertBoardOwnership(ctx, task.board_id, identity.subject);
     const patch: {
       title?: string;
       description?: string;
@@ -97,6 +127,10 @@ export const updateStatusAndPosition = mutation({
     if (!isValidStatus(args.status)) {
       throw new Error("Invalid status");
     }
+    const identity = await requireIdentity(ctx);
+    const task = await ctx.db.get(args.id);
+    if (!task) throw new Error("Task not found");
+    await assertBoardOwnership(ctx, task.board_id, identity.subject);
     await ctx.db.patch(args.id, {
       status: args.status,
       position: args.position,
@@ -108,6 +142,10 @@ export const updateStatusAndPosition = mutation({
 export const remove = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const task = await ctx.db.get(args.id);
+    if (!task) throw new Error("Task not found");
+    await assertBoardOwnership(ctx, task.board_id, identity.subject);
     await ctx.db.delete(args.id);
   },
 });

@@ -9,11 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ProfileSheet } from "@/components/profile-sheet";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { useQuery } from "convex/react";
 import { LogOut, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -31,6 +33,7 @@ function getInitials(name?: string | null, email?: string | null): string {
 
 export function AvatarDropdown() {
   const router = useRouter();
+  const [profileOpen, setProfileOpen] = useState(false);
   const user = useQuery(api.auth.getCurrentUser);
 
   const handleLogout = async () => {
@@ -89,7 +92,10 @@ export function AvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={() => setProfileOpen(true)}
+        >
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
@@ -99,6 +105,7 @@ export function AvatarDropdown() {
           <span>Cerrar sesión</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </DropdownMenu>
   );
 }

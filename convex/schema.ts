@@ -5,10 +5,13 @@ export default defineSchema({
   boards: defineTable({
     name: v.string(),
     description: v.optional(v.string()),
+    owner_id: v.optional(v.string()),
     created_at: v.number(),
     updated_at: v.number(),
     active: v.boolean(),
-  }).index("by_active", ["active"]),
+  })
+    .index("by_active", ["active"])
+    .index("by_owner_active", ["owner_id", "active"]),
 
   tasks: defineTable({
     board_id: v.id("boards"),
