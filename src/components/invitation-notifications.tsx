@@ -1,17 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 import { Bell } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function InvitationNotifications() {
   const router = useRouter();
@@ -35,17 +34,14 @@ export function InvitationNotifications() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="relative inline-flex cursor-pointer items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="group relative inline-flex cursor-pointer items-center justify-center rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-[0.97]"
           aria-label="Notificaciones de invitaciones"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:rotate-12" />
           {count > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -right-1 -top-1 h-5 min-w-5 px-1 text-xs"
-            >
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-semibold text-destructive-foreground shadow-sm ring-2 ring-background">
               {count > 99 ? "99+" : count}
-            </Badge>
+            </span>
           )}
         </button>
       </DropdownMenuTrigger>
@@ -62,13 +58,9 @@ export function InvitationNotifications() {
         ) : (
           <ul className="max-h-72 overflow-y-auto">
             {invitations.map((inv) => (
-              <li
-                key={inv._id}
-                className="border-b border-border px-2 py-3 last:border-0"
-              >
+              <li key={inv._id} className="border-b border-border px-2 py-3 last:border-0">
                 <p className="text-sm">
-                  <span className="font-medium">{inv.inviter_name}</span> te ha
-                  invitado al tablero{" "}
+                  <span className="font-medium">{inv.inviter_name}</span> te ha invitado al tablero{" "}
                   <span className="font-medium">{inv.board_name}</span>.
                 </p>
                 <div className="mt-2 flex gap-2">

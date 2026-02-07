@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import type { Id } from "@/convex/_generated/dataModel";
-import { api } from "@/convex/_generated/api";
-import { useAction, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useAction, useQuery } from "convex/react";
+import { useState } from "react";
 
 type ShareBoardDialogProps = {
   open: boolean;
@@ -21,11 +21,7 @@ type ShareBoardDialogProps = {
   boardId: Id<"boards">;
 };
 
-export function ShareBoardDialog({
-  open,
-  onOpenChange,
-  boardId,
-}: ShareBoardDialogProps) {
+export function ShareBoardDialog({ open, onOpenChange, boardId }: ShareBoardDialogProps) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -95,9 +91,7 @@ export function ShareBoardDialog({
             </p>
             <ul className="text-sm text-muted-foreground space-y-1">
               {pendingInvitations.map((inv) => (
-                <li key={inv._id}>
-                  Invitación enviada (pendiente de aceptación)
-                </li>
+                <li key={inv._id}>Invitación enviada (pendiente de aceptación)</li>
               ))}
             </ul>
           </div>

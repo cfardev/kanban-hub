@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useEffect, useState } from "react";
 
 type BoardForEdit = {
   _id: Id<"boards">;
@@ -26,12 +26,7 @@ type BoardDialogProps = {
   onSave: (data: { name: string; description?: string; id?: Id<"boards"> }) => void;
 };
 
-export function BoardDialog({
-  open,
-  onOpenChange,
-  board,
-  onSave,
-}: BoardDialogProps) {
+export function BoardDialog({ open, onOpenChange, board, onSave }: BoardDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 

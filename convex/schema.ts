@@ -19,6 +19,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     status: v.string(),
     position: v.number(),
+    assignee_id: v.optional(v.string()),
     created_at: v.number(),
     updated_at: v.number(),
   })
@@ -40,11 +41,7 @@ export default defineSchema({
     invitee_id: v.string(),
     inviter_name: v.string(),
     board_name: v.string(),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("accepted"),
-      v.literal("rejected")
-    ),
+    status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("rejected")),
     created_at: v.number(),
     updated_at: v.number(),
   })

@@ -6,11 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { SiGoogle } from "react-icons/si";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { SiGoogle } from "react-icons/si";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -96,99 +96,102 @@ export default function SignUpPage() {
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  minLength={8}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  minLength={8}
+                />
+              </div>
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden rounded-none border border-destructive/50 bg-destructive/10 px-2.5 py-2 text-xs text-destructive"
+                  >
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating account..." : "Sign Up"}
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full cursor-pointer"
                 disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-                minLength={8}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={isLoading}
-                minLength={8}
-              />
-            </div>
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden rounded-none border border-destructive/50 bg-destructive/10 px-2.5 py-2 text-xs text-destructive"
+                onClick={() => {
+                  authClient.signIn.social({
+                    provider: "google",
+                    callbackURL: "/dashboard",
+                  });
+                }}
+              >
+                <SiGoogle className="shrink-0" aria-hidden />
+                Google
+              </Button>
+              <div className="text-center text-xs text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  href="/sign-in"
+                  className="cursor-pointer text-primary underline-offset-4 hover:underline"
                 >
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Sign Up"}
-            </Button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                  Sign in
+                </Link>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full cursor-pointer"
-              disabled={isLoading}
-              onClick={() => {
-                authClient.signIn.social({
-                  provider: "google",
-                  callbackURL: "/dashboard",
-                });
-              }}
-            >
-              <SiGoogle className="shrink-0" aria-hidden />
-              Google
-            </Button>
-            <div className="text-center text-xs text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/sign-in" className="cursor-pointer text-primary underline-offset-4 hover:underline">
-                Sign in
-              </Link>
-            </div>
             </form>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
-import type { QueryCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 
 const VALID_STATUSES = ["por_empezar", "en_curso", "terminado"] as const;
@@ -17,22 +17,29 @@ async function requireIdentity(ctx: QueryCtx) {
   return identity;
 }
 
-async function assertBoardAccess(
-  ctx: QueryCtx,
-  boardId: Id<"boards">,
-  userId: string
-) {
+async function assertBoardAccess(ctx: QueryCtx, boardId: Id<"boards">, userId: string) {
   const board = await ctx.db.get(boardId);
   if (!board?.active) throw new Error("Board not found");
   if (board.owner_id === userId) return board;
   const member = await ctx.db
     .query("board_members")
-    .withIndex("by_board_and_user", (q) =>
-      q.eq("board_id", boardId).eq("user_id", userId)
-    )
+    .withIndex("by_board_and_user", (q) => q.eq("board_id", boardId).eq("user_id", userId))
     .unique();
   if (member === null) throw new Error("Board not found");
   return board;
+}
+
+async function getBoardParticipantIds(ctx: QueryCtx, boardId: Id<"boards">): Promise<Set<string>> {
+  const board = await ctx.db.get(boardId);
+  if (!board?.active) return new Set();
+  const ids = new Set<string>();
+  if (board.owner_id) ids.add(board.owner_id);
+  const members = await ctx.db
+    .query("board_members")
+    .withIndex("by_board", (q) => q.eq("board_id", boardId))
+    .collect();
+  for (const m of members) ids.add(m.user_id);
+  return ids;
 }
 
 export const listByBoard = query({
@@ -68,6 +75,7 @@ export const create = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     status: v.string(),
+    assignee_id: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     if (!isValidStatus(args.status)) {
@@ -75,16 +83,17 @@ export const create = mutation({
     }
     const identity = await requireIdentity(ctx);
     await assertBoardAccess(ctx, args.boardId, identity.subject);
+    if (args.assignee_id !== undefined && args.assignee_id !== "") {
+      const participantIds = await getBoardParticipantIds(ctx, args.boardId);
+      if (!participantIds.has(args.assignee_id)) {
+        throw new Error("Assignee must be a board participant");
+      }
+    }
     const existing = await ctx.db
       .query("tasks")
-      .withIndex("by_board_status", (q) =>
-        q.eq("board_id", args.boardId).eq("status", args.status)
-      )
+      .withIndex("by_board_status", (q) => q.eq("board_id", args.boardId).eq("status", args.status))
       .collect();
-    const position =
-      existing.length === 0
-        ? 0
-        : Math.max(...existing.map((t) => t.position)) + 1;
+    const position = existing.length === 0 ? 0 : Math.max(...existing.map((t) => t.position)) + 1;
     const now = Date.now();
     return await ctx.db.insert("tasks", {
       board_id: args.boardId,
@@ -92,6 +101,7 @@ export const create = mutation({
       description: args.description,
       status: args.status,
       position,
+      assignee_id: args.assignee_id && args.assignee_id !== "" ? args.assignee_id : undefined,
       created_at: now,
       updated_at: now,
     });
@@ -105,6 +115,7 @@ export const update = mutation({
     description: v.optional(v.string()),
     status: v.optional(v.string()),
     position: v.optional(v.number()),
+    assignee_id: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -115,17 +126,30 @@ export const update = mutation({
     const task = await ctx.db.get(id);
     if (!task) throw new Error("Task not found");
     await assertBoardAccess(ctx, task.board_id, identity.subject);
+    if (updates.assignee_id !== undefined) {
+      if (updates.assignee_id !== "" && updates.assignee_id !== null) {
+        const participantIds = await getBoardParticipantIds(ctx, task.board_id);
+        if (!participantIds.has(updates.assignee_id)) {
+          throw new Error("Assignee must be a board participant");
+        }
+      }
+    }
     const patch: {
       title?: string;
       description?: string;
       status?: string;
       position?: number;
+      assignee_id?: string;
       updated_at: number;
     } = { updated_at: Date.now() };
     if (updates.title !== undefined) patch.title = updates.title;
     if (updates.description !== undefined) patch.description = updates.description;
     if (updates.status !== undefined) patch.status = updates.status;
     if (updates.position !== undefined) patch.position = updates.position;
+    if (updates.assignee_id !== undefined) {
+      patch.assignee_id =
+        updates.assignee_id && updates.assignee_id !== "" ? updates.assignee_id : undefined;
+    }
     await ctx.db.patch(id, patch);
   },
 });

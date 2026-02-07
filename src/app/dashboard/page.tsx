@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import type { Id } from "@/convex/_generated/dataModel";
-import { BoardDialog } from "@/components/board-dialog";
-import { Logo } from "@/components/logo";
 import { AvatarDropdown } from "@/components/avatar-dropdown";
+import { BoardDialog } from "@/components/board-dialog";
 import { InvitationNotifications } from "@/components/invitation-notifications";
+import { Logo } from "@/components/logo";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { motion } from "motion/react";
 import { LayoutDashboard, Pencil, Plus, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
+import Link from "next/link";
+import { useState } from "react";
 
 const boardGridVariants = {
   hidden: { opacity: 0 },
@@ -39,6 +49,7 @@ export default function DashboardPage() {
     name: string;
     description?: string;
   } | null>(null);
+  const [boardToDelete, setBoardToDelete] = useState<Id<"boards"> | null>(null);
 
   const handleSave = (data: {
     name: string;
@@ -63,9 +74,14 @@ export default function DashboardPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: Id<"boards">) => {
-    if (confirm("¿Eliminar este tablero?")) {
-      removeBoard({ id });
+  const handleDeleteClick = (id: Id<"boards">) => {
+    setBoardToDelete(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (boardToDelete) {
+      removeBoard({ id: boardToDelete });
+      setBoardToDelete(null);
     }
   };
 
@@ -111,6 +127,30 @@ export default function DashboardPage() {
           board={editingBoard}
           onSave={handleSave}
         />
+
+        <AlertDialog
+          open={boardToDelete !== null}
+          onOpenChange={(open) => !open && setBoardToDelete(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar este tablero?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Se eliminarán también todas las tareas del tablero. Esta acción no se puede
+                deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirm}
+                className="cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/20"
+              >
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {boards.length === 0 ? (
           <motion.div
@@ -171,7 +211,7 @@ export default function DashboardPage() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleDelete(board._id);
+                                handleDeleteClick(board._id);
                               }}
                               aria-label="Eliminar"
                             >
@@ -187,7 +227,10 @@ export default function DashboardPage() {
                         <div className="text-xs text-muted-foreground">
                           Creado {new Date(board.created_at).toLocaleDateString("es-ES")}
                           {board.updated_at !== board.created_at && (
-                            <> · Actualizado {new Date(board.updated_at).toLocaleDateString("es-ES")}</>
+                            <>
+                              {" "}
+                              · Actualizado {new Date(board.updated_at).toLocaleDateString("es-ES")}
+                            </>
                           )}
                         </div>
                       </CardContent>

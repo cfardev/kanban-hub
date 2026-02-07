@@ -1,6 +1,6 @@
+import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { mutation } from "./_generated/server";
-import { v } from "convex/values";
 
 export const generateProfileImageUploadUrl = mutation({
   args: {},

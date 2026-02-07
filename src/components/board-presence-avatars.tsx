@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useAction } from "convex/react";
-import usePresence from "@convex-dev/presence/react";
-import { api } from "@/convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { api } from "@/convex/_generated/api";
+import usePresence from "@convex-dev/presence/react";
+import { useAction } from "convex/react";
+import { useEffect, useMemo, useState } from "react";
 
 function getInitials(name?: string | null): string {
   if (name) {
@@ -33,9 +33,7 @@ export function BoardPresenceAvatars({ boardId, currentUserId }: BoardPresenceAv
   // Solo usuarios que están online en esta sala (este tablero); la sala = boardId
   const onlineUserIds = useMemo(
     () =>
-      presenceState
-        ? [...new Set(presenceState.filter((p) => p.online).map((p) => p.userId))]
-        : [],
+      presenceState ? [...new Set(presenceState.filter((p) => p.online).map((p) => p.userId))] : [],
     [presenceState]
   );
 

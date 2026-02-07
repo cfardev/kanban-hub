@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileSheet } from "@/components/profile-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProfileSheet } from "@/components/profile-sheet";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { useQuery } from "convex/react";
@@ -92,10 +92,7 @@ export function AvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onSelect={() => setProfileOpen(true)}
-        >
+        <DropdownMenuItem className="cursor-pointer" onSelect={() => setProfileOpen(true)}>
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>

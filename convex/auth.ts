@@ -1,6 +1,6 @@
+import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { action, query } from "./_generated/server";
-import { v } from "convex/values";
 
 export const getCurrentUser = query({
   args: {},
@@ -16,7 +16,10 @@ export const getCurrentUser = query({
       ...identity,
       name: (userDoc as { name?: string }).name ?? identity.name,
       email: (userDoc as { email?: string }).email ?? identity.email,
-      image: (userDoc as { image?: string | null }).image ?? (identity as { image?: string | null }).image ?? undefined,
+      image:
+        (userDoc as { image?: string | null }).image ??
+        (identity as { image?: string | null }).image ??
+        undefined,
     };
   },
 });

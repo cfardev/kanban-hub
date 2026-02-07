@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import { useMutation } from "convex/react";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { api } from "@/convex/_generated/api";
 import { KanbanColumn } from "@/components/kanban-column";
 import { TaskCardOverlay } from "@/components/task-card-overlay";
+import { api } from "@/convex/_generated/api";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useMutation } from "convex/react";
 import { motion } from "motion/react";
+import { useCallback, useState } from "react";
 
 const columnContainerVariants = {
   hidden: { opacity: 0 },
@@ -32,16 +32,20 @@ type Task = Doc<"tasks">;
 
 const COLUMNS = ["por_empezar", "en_curso", "terminado"] as const;
 
+export type ParticipantsInfoMap = Record<string, { name: string | null; image: string | null }>;
+
 export function KanbanBoard({
   boardId,
   tasks,
   onTaskClick,
   onNewTask,
+  participantsInfoMap = {},
 }: {
   boardId: string;
   tasks: Task[];
   onTaskClick?: (task: Task) => void;
   onNewTask?: () => void;
+  participantsInfoMap?: ParticipantsInfoMap;
 }) {
   const [activeId, setActiveId] = useState<Id<"tasks"> | null>(null);
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
@@ -72,9 +76,7 @@ export function KanbanBoard({
       const status = targetStatus;
       const tasksInColumn = tasks.filter((t) => t.status === status);
       const newPosition =
-        tasksInColumn.length === 0
-          ? 0
-          : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
+        tasksInColumn.length === 0 ? 0 : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
       updateStatusAndPosition({
         id: taskId,
         status,
@@ -114,11 +116,25 @@ export function KanbanBoard({
             tasks={tasksByStatus[status]}
             onTaskClick={onTaskClick ?? (() => {})}
             onNewTask={status === "por_empezar" ? onNewTask : undefined}
+            participantsInfoMap={participantsInfoMap}
           />
         ))}
       </motion.div>
       <DragOverlay dropAnimation={null}>
-        {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
+        {activeTask ? (
+          <TaskCardOverlay
+            task={activeTask}
+            assigneeInfo={
+              activeTask.assignee_id
+                ? {
+                    _id: activeTask.assignee_id,
+                    name: participantsInfoMap[activeTask.assignee_id]?.name ?? null,
+                    image: participantsInfoMap[activeTask.assignee_id]?.image ?? null,
+                  }
+                : null
+            }
+          />
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

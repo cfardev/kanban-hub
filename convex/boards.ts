@@ -1,6 +1,6 @@
-import type { QueryCtx } from "./_generated/server";
-import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { internalQuery, mutation, query } from "./_generated/server";
 
 async function requireIdentity(ctx: QueryCtx) {
@@ -11,28 +11,18 @@ async function requireIdentity(ctx: QueryCtx) {
   return identity;
 }
 
-async function hasBoardAccess(
-  ctx: QueryCtx,
-  boardId: Id<"boards">,
-  userId: string
-) {
+async function hasBoardAccess(ctx: QueryCtx, boardId: Id<"boards">, userId: string) {
   const board = await ctx.db.get(boardId);
   if (!board?.active) return false;
   if (board.owner_id === userId) return true;
   const member = await ctx.db
     .query("board_members")
-    .withIndex("by_board_and_user", (q) =>
-      q.eq("board_id", boardId).eq("user_id", userId)
-    )
+    .withIndex("by_board_and_user", (q) => q.eq("board_id", boardId).eq("user_id", userId))
     .unique();
   return member !== null;
 }
 
-async function assertBoardAccess(
-  ctx: QueryCtx,
-  boardId: Id<"boards">,
-  userId: string
-) {
+async function assertBoardAccess(ctx: QueryCtx, boardId: Id<"boards">, userId: string) {
   const hasAccess = await hasBoardAccess(ctx, boardId, userId);
   if (!hasAccess) throw new Error("Board not found");
   const board = await ctx.db.get(boardId);
@@ -40,11 +30,7 @@ async function assertBoardAccess(
   return board;
 }
 
-async function getBoardOrThrow(
-  ctx: QueryCtx,
-  boardId: Id<"boards">,
-  ownerId: string
-) {
+async function getBoardOrThrow(ctx: QueryCtx, boardId: Id<"boards">, ownerId: string) {
   const board = await ctx.db.get(boardId);
   if (!board?.active || board.owner_id !== ownerId) {
     throw new Error("Board not found");
@@ -75,28 +61,44 @@ export const getById = query({
   },
 });
 
+/** Returns board participant user ids (owner + members) for assignee validation/UI. */
+export const listParticipants = query({
+  args: { boardId: v.id("boards") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const hasAccess = await hasBoardAccess(ctx, args.boardId, identity.subject);
+    if (!hasAccess) return [];
+    const board = await ctx.db.get(args.boardId);
+    if (!board?.active) return [];
+    const ids = new Set<string>();
+    if (board.owner_id) ids.add(board.owner_id);
+    const members = await ctx.db
+      .query("board_members")
+      .withIndex("by_board", (q) => q.eq("board_id", args.boardId))
+      .collect();
+    for (const m of members) ids.add(m.user_id);
+    return [...ids];
+  },
+});
+
 export const list = query({
   handler: async (ctx) => {
     const identity = await requireIdentity(ctx);
     const owned = await ctx.db
       .query("boards")
-      .withIndex("by_owner_active", (q) =>
-        q.eq("owner_id", identity.subject).eq("active", true)
-      )
+      .withIndex("by_owner_active", (q) => q.eq("owner_id", identity.subject).eq("active", true))
       .collect();
     const memberRows = await ctx.db
       .query("board_members")
       .withIndex("by_user", (q) => q.eq("user_id", identity.subject))
       .collect();
-    const memberBoards = await Promise.all(
-      memberRows.map((r) => ctx.db.get(r.board_id))
-    );
+    const memberBoards = await Promise.all(memberRows.map((r) => ctx.db.get(r.board_id)));
     const ownedIds = new Set(owned.map((b) => b._id));
     const merged = [
       ...owned,
       ...memberBoards.filter(
-        (b): b is Doc<"boards"> =>
-          b != null && b?.active === true && !ownedIds.has(b._id)
+        (b): b is Doc<"boards"> => b != null && b?.active === true && !ownedIds.has(b._id)
       ),
     ];
     return merged.sort((a, b) => b.created_at - a.created_at);
@@ -132,10 +134,9 @@ export const update = mutation({
     const identity = await requireIdentity(ctx);
     await getBoardOrThrow(ctx, args.id, identity.subject);
     const { id, name, description } = args;
-    const updates: { name?: string; description?: string; updated_at: number } =
-      {
-        updated_at: Date.now(),
-      };
+    const updates: { name?: string; description?: string; updated_at: number } = {
+      updated_at: Date.now(),
+    };
     if (name !== undefined) updates.name = name;
     if (description !== undefined) updates.description = description;
     await ctx.db.patch(id, updates);

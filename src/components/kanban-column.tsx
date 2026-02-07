@@ -1,14 +1,15 @@
 "use client";
 
+import type { ParticipantsInfoMap } from "@/components/kanban-board";
+import { TaskCard } from "@/components/task-card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { TaskCard } from "@/components/task-card";
-import { motion } from "motion/react";
 import { Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 const columnVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -28,11 +29,13 @@ export function KanbanColumn({
   tasks,
   onTaskClick,
   onNewTask,
+  participantsInfoMap = {},
 }: {
   status: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
   onNewTask?: () => void;
+  participantsInfoMap?: ParticipantsInfoMap;
 }) {
   const droppableId = `column-${status}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
@@ -40,16 +43,9 @@ export function KanbanColumn({
   const label = COLUMN_LABELS[status] ?? status;
 
   return (
-    <motion.div
-      ref={setNodeRef}
-      className="flex min-w-0 flex-1 flex-col"
-      variants={columnVariants}
-    >
+    <motion.div ref={setNodeRef} className="flex min-w-0 flex-1 flex-col" variants={columnVariants}>
       <Card
-        className={cn(
-          "flex flex-1 flex-col transition-colors",
-          isOver && "ring-2 ring-primary"
-        )}
+        className={cn("flex flex-1 flex-col transition-colors", isOver && "ring-2 ring-primary")}
       >
         <CardHeader className="py-3">
           <CardTitle className="text-sm font-medium">{label}</CardTitle>
@@ -57,7 +53,20 @@ export function KanbanColumn({
         <CardContent className="flex flex-1 flex-col gap-2 overflow-auto pb-4">
           <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
             {tasks.map((task) => (
-              <TaskCard key={task._id} task={task} onClick={onTaskClick} />
+              <TaskCard
+                key={task._id}
+                task={task}
+                onClick={onTaskClick}
+                assigneeInfo={
+                  task.assignee_id
+                    ? {
+                        _id: task.assignee_id,
+                        name: participantsInfoMap[task.assignee_id]?.name ?? null,
+                        image: participantsInfoMap[task.assignee_id]?.image ?? null,
+                      }
+                    : null
+                }
+              />
             ))}
           </SortableContext>
           {onNewTask ? (

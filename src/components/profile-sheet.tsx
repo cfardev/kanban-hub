@@ -167,15 +167,9 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
             />
           </div>
 
-          {error && (
-            <p className="text-destructive text-sm">{error}</p>
-          )}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
-          <Button
-            className="cursor-pointer"
-            disabled={isSaving}
-            onClick={handleSave}
-          >
+          <Button className="cursor-pointer" disabled={isSaving} onClick={handleSave}>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

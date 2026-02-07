@@ -1,13 +1,13 @@
+import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
 
 export const heartbeat = mutation({
   args: {
     roomId: v.string(),
     userId: v.string(),
     sessionId: v.string(),
-    interval: v.optional(v.number()),
+    interval: v.number(),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();

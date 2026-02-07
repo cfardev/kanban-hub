@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import type { Doc } from "@/convex/_generated/dataModel";
-import { api } from "@/convex/_generated/api";
-import { KanbanBoard } from "@/components/kanban-board";
-import { TaskDialog } from "@/components/task-dialog";
-import { ShareBoardDialog } from "@/components/share-board-dialog";
+import { AvatarDropdown } from "@/components/avatar-dropdown";
 import { BoardPresenceAvatars } from "@/components/board-presence-avatars";
 import { InvitationNotifications } from "@/components/invitation-notifications";
+import { KanbanBoard } from "@/components/kanban-board";
 import { Logo } from "@/components/logo";
-import { AvatarDropdown } from "@/components/avatar-dropdown";
+import { ShareBoardDialog } from "@/components/share-board-dialog";
+import { type ParticipantInfo, TaskDialog } from "@/components/task-dialog";
 import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Doc } from "@/convex/_generated/dataModel";
+import { useAction, useQuery } from "convex/react";
 import { ArrowLeft, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 type Task = Doc<"tasks">;
 
@@ -24,11 +24,30 @@ export default function BoardPage() {
   const boardId = params.boardId as string;
   const board = useQuery(api.boards.getById, { id: boardId as never });
   const tasks = useQuery(api.tasks.listByBoard, { boardId: boardId as never });
+  const participantIds = useQuery(api.boards.listParticipants, {
+    boardId: boardId as never,
+  });
   const currentUser = useQuery(api.auth.getCurrentUser);
+  const getUsersPublicInfo = useAction(api.auth.getUsersPublicInfo);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
+
+  useEffect(() => {
+    if (participantIds !== undefined && participantIds.length > 1) {
+      getUsersPublicInfo({ userIds: participantIds }).then(setParticipantsInfo);
+    } else {
+      setParticipantsInfo([]);
+    }
+  }, [participantIds, getUsersPublicInfo]);
+
+  const participantsInfoMap = useMemo(
+    () =>
+      Object.fromEntries(participantsInfo.map((p) => [p._id, { name: p.name, image: p.image }])),
+    [participantsInfo]
+  );
 
   const isOwner =
     board != null &&
@@ -51,7 +70,7 @@ export default function BoardPage() {
     }
   }, [board, router]);
 
-  if (board === undefined || tasks === undefined) {
+  if (board === undefined || tasks === undefined || participantIds === undefined) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-7xl">
@@ -84,9 +103,7 @@ export default function BoardPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">{board.name}</h1>
-              {board.description && (
-                <p className="text-muted-foreground">{board.description}</p>
-              )}
+              {board.description && <p className="text-muted-foreground">{board.description}</p>}
             </div>
             {isOwner && (
               <Button
@@ -118,12 +135,15 @@ export default function BoardPage() {
           tasks={tasks}
           onTaskClick={openTask}
           onNewTask={openNewTask}
+          participantsInfoMap={participantsInfoMap}
         />
         <TaskDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           task={selectedTask}
           boardId={boardId as never}
+          participantIds={participantIds}
+          participantsInfo={participantsInfo}
         />
       </div>
     </div>
