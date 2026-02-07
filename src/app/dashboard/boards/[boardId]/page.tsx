@@ -59,7 +59,7 @@ export default function BoardPage() {
         </div>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
               <Link href="/dashboard" aria-label="Volver">
                 <ArrowLeft className="h-4 w-4" />
               </Link>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { PageMotion } from "@/components/page-motion";
 import { getToken } from "@/lib/auth-server";
 
 const figtree = Figtree({
@@ -24,7 +25,9 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={`${figtree.variable} font-sans antialiased`}>
-        <ConvexClientProvider initialToken={token}>{children}</ConvexClientProvider>
+        <ConvexClientProvider initialToken={token}>
+        <PageMotion>{children}</PageMotion>
+      </ConvexClientProvider>
       </body>
     </html>
   );

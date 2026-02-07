@@ -18,6 +18,15 @@ import { api } from "@/convex/_generated/api";
 import { KanbanColumn } from "@/components/kanban-column";
 import { TaskCardOverlay } from "@/components/task-card-overlay";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { motion } from "motion/react";
+
+const columnContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.03 },
+  },
+};
 
 type Task = Doc<"tasks">;
 
@@ -92,17 +101,22 @@ export function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid gap-4 md:grid-cols-3">
+      <motion.div
+        className="grid gap-4 md:grid-cols-3"
+        variants={columnContainerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {COLUMNS.map((status) => (
           <KanbanColumn
             key={status}
             status={status}
             tasks={tasksByStatus[status]}
-            onTaskClick={onTaskClick ?? (() => { })}
+            onTaskClick={onTaskClick ?? (() => {})}
             onNewTask={status === "por_empezar" ? onNewTask : undefined}
           />
         ))}
-      </div>
+      </motion.div>
       <DragOverlay dropAnimation={null}>
         {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
       </DragOverlay>

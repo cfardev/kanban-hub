@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import { SiGoogle } from "react-icons/si";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -71,19 +72,30 @@ export default function SignUpPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
-      <div className="mb-8">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         <Logo className="text-2xl" />
-      </div>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
-          <CardDescription>Create a new account to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
+      </motion.div>
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign Up</CardTitle>
+            <CardDescription>Create a new account to get started</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
                 id="name"
                 type="text"
                 placeholder="John Doe"
@@ -131,11 +143,20 @@ export default function SignUpPage() {
                 minLength={8}
               />
             </div>
-            {error && (
-              <div className="rounded-none border border-destructive/50 bg-destructive/10 px-2.5 py-2 text-xs text-destructive">
-                {error}
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden rounded-none border border-destructive/50 bg-destructive/10 px-2.5 py-2 text-xs text-destructive"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
@@ -150,7 +171,7 @@ export default function SignUpPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full cursor-pointer"
               disabled={isLoading}
               onClick={() => {
                 authClient.signIn.social({
@@ -168,9 +189,10 @@ export default function SignUpPage() {
                 Sign in
               </Link>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

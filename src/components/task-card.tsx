@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { motion } from "motion/react";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -54,14 +55,19 @@ export function TaskCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card
-        className={cn(
-          "cursor-grab active:cursor-grabbing hover:bg-muted/25",
-          isDragging && "opacity-50",
-          className
-        )}
-        onClick={() => onClick(task)}
+      <motion.div
+        whileHover={!isDragging ? { scale: 1.01 } : undefined}
+        whileTap={!isDragging ? { scale: 0.99 } : undefined}
+        transition={{ duration: 0.15 }}
       >
+        <Card
+          className={cn(
+            "cursor-grab active:cursor-grabbing hover:bg-muted/25",
+            isDragging && "opacity-50",
+            className
+          )}
+          onClick={() => onClick(task)}
+        >
         <CardHeader className="flex flex-row items-start gap-2 py-3">
           <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">
             {task.title}
@@ -110,7 +116,8 @@ export function TaskCard({
             </p>
           </CardContent>
         ) : null}
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 }

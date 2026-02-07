@@ -6,8 +6,14 @@ import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskCard } from "@/components/task-card";
+import { motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const columnVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 type Task = Doc<"tasks">;
 
@@ -34,7 +40,11 @@ export function KanbanColumn({
   const label = COLUMN_LABELS[status] ?? status;
 
   return (
-    <div ref={setNodeRef} className="flex min-w-0 flex-1 flex-col">
+    <motion.div
+      ref={setNodeRef}
+      className="flex min-w-0 flex-1 flex-col"
+      variants={columnVariants}
+    >
       <Card
         className={cn(
           "flex flex-1 flex-col transition-colors",
@@ -54,7 +64,7 @@ export function KanbanColumn({
             <Button
               variant="ghost"
               size="sm"
-              className="mt-2 w-full justify-start gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="mt-2 w-full cursor-pointer justify-start gap-2 text-muted-foreground hover:text-foreground"
               onClick={onNewTask}
             >
               <Plus className="h-4 w-4" />
@@ -63,6 +73,6 @@ export function KanbanColumn({
           ) : null}
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
