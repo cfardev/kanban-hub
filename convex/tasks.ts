@@ -17,15 +17,21 @@ async function requireIdentity(ctx: QueryCtx) {
   return identity;
 }
 
-async function assertBoardOwnership(
+async function assertBoardAccess(
   ctx: QueryCtx,
   boardId: Id<"boards">,
-  ownerId: string
+  userId: string
 ) {
   const board = await ctx.db.get(boardId);
-  if (!board?.active || board.owner_id !== ownerId) {
-    throw new Error("Board not found");
-  }
+  if (!board?.active) throw new Error("Board not found");
+  if (board.owner_id === userId) return board;
+  const member = await ctx.db
+    .query("board_members")
+    .withIndex("by_board_and_user", (q) =>
+      q.eq("board_id", boardId).eq("user_id", userId)
+    )
+    .unique();
+  if (member === null) throw new Error("Board not found");
   return board;
 }
 
@@ -35,8 +41,15 @@ export const listByBoard = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
     const board = await ctx.db.get(args.boardId);
-    if (!board?.active || board.owner_id !== identity.subject) {
-      return [];
+    if (!board?.active) return [];
+    if (board.owner_id !== identity.subject) {
+      const member = await ctx.db
+        .query("board_members")
+        .withIndex("by_board_and_user", (q) =>
+          q.eq("board_id", args.boardId).eq("user_id", identity.subject)
+        )
+        .unique();
+      if (member === null) return [];
     }
     const tasks = await ctx.db
       .query("tasks")
@@ -61,7 +74,7 @@ export const create = mutation({
       throw new Error("Invalid status");
     }
     const identity = await requireIdentity(ctx);
-    await assertBoardOwnership(ctx, args.boardId, identity.subject);
+    await assertBoardAccess(ctx, args.boardId, identity.subject);
     const existing = await ctx.db
       .query("tasks")
       .withIndex("by_board_status", (q) =>
@@ -101,7 +114,7 @@ export const update = mutation({
     const identity = await requireIdentity(ctx);
     const task = await ctx.db.get(id);
     if (!task) throw new Error("Task not found");
-    await assertBoardOwnership(ctx, task.board_id, identity.subject);
+    await assertBoardAccess(ctx, task.board_id, identity.subject);
     const patch: {
       title?: string;
       description?: string;
@@ -130,7 +143,7 @@ export const updateStatusAndPosition = mutation({
     const identity = await requireIdentity(ctx);
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
-    await assertBoardOwnership(ctx, task.board_id, identity.subject);
+    await assertBoardAccess(ctx, task.board_id, identity.subject);
     await ctx.db.patch(args.id, {
       status: args.status,
       position: args.position,
@@ -145,7 +158,7 @@ export const remove = mutation({
     const identity = await requireIdentity(ctx);
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
-    await assertBoardOwnership(ctx, task.board_id, identity.subject);
+    await assertBoardAccess(ctx, task.board_id, identity.subject);
     await ctx.db.delete(args.id);
   },
 });

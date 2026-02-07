@@ -6,6 +6,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { BoardDialog } from "@/components/board-dialog";
 import { Logo } from "@/components/logo";
 import { AvatarDropdown } from "@/components/avatar-dropdown";
+import { InvitationNotifications } from "@/components/invitation-notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
@@ -88,7 +89,10 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex items-center justify-between border-b pb-4">
           <Logo href="/dashboard" className="text-xl" />
-          <AvatarDropdown />
+          <div className="flex items-center gap-2">
+            <InvitationNotifications />
+            <AvatarDropdown />
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div>

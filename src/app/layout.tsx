@@ -23,8 +23,8 @@ export default async function RootLayout({
 }>) {
   const token = await getToken();
   return (
-    <html lang="es">
-      <body className={`${figtree.variable} font-sans antialiased`}>
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${figtree.variable} font-sans antialiased`} suppressHydrationWarning>
         <ConvexClientProvider initialToken={token}>
         <PageMotion>{children}</PageMotion>
       </ConvexClientProvider>
