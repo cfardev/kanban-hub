@@ -84,10 +84,13 @@ export const listParticipants = query({
 
 export const list = query({
   handler: async (ctx) => {
-    const identity = await requireIdentity(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
     const owned = await ctx.db
       .query("boards")
-      .withIndex("by_owner_active", (q) => q.eq("owner_id", identity.subject).eq("active", true))
+      .withIndex("by_owner_active", (q) =>
+        q.eq("owner_id", identity.subject).eq("active", true)
+      )
       .collect();
     const memberRows = await ctx.db
       .query("board_members")

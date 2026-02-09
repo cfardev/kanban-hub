@@ -17,15 +17,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation } from "convex/react";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { ArrowRight, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 
@@ -48,16 +51,24 @@ function getInitials(name?: string | null): string {
   return "?";
 }
 
+const MOVE_COLUMNS: { status: string; label: string }[] = [
+  { status: "por_empezar", label: "Por Empezar" },
+  { status: "en_curso", label: "En curso" },
+  { status: "terminado", label: "Terminado" },
+];
+
 export function TaskCard({
   task,
   onClick,
   className,
   assigneeInfo = null,
+  onMoveTask,
 }: {
   task: Task;
   onClick: (task: Task) => void;
   className?: string;
   assigneeInfo?: AssigneeInfo | null;
+  onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
@@ -94,11 +105,20 @@ export function TaskCard({
         >
           <Card
             className={cn(
-              "cursor-grab active:cursor-grabbing hover:bg-muted/25",
+              "cursor-grab active:cursor-grabbing hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isDragging && "opacity-50",
               className
             )}
+            tabIndex={0}
+            role="button"
+            aria-label={task.title ? `Abrir ${task.title}` : "Abrir tarea"}
             onClick={() => onClick(task)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick(task);
+              }
+            }}
           >
             <CardHeader className="flex flex-row items-start gap-2 py-3">
               <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -142,6 +162,30 @@ export function TaskCard({
                     <Pencil className="h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
+                  {onMoveTask ? (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="cursor-pointer">
+                        <ArrowRight className="h-4 w-4" />
+                        Mover a
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        {MOVE_COLUMNS.map(({ status, label }) =>
+                          task.status === status ? null : (
+                            <DropdownMenuItem
+                              key={status}
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                stopPropagation(e);
+                                onMoveTask(task._id, status);
+                              }}
+                            >
+                              {label}
+                            </DropdownMenuItem>
+                          )
+                        )}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  ) : null}
                   <DropdownMenuItem
                     variant="destructive"
                     className="cursor-pointer"

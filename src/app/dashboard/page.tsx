@@ -22,6 +22,7 @@ import { useMutation, useQuery } from "convex/react";
 import { LayoutDashboard, Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const boardGridVariants = {
@@ -38,6 +39,8 @@ const boardCardVariants = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const user = useQuery(api.auth.getCurrentUser);
   const boards = useQuery(api.boards.list);
   const createBoard = useMutation(api.boards.create);
   const updateBoard = useMutation(api.boards.update);
@@ -50,6 +53,20 @@ export default function DashboardPage() {
     description?: string;
   } | null>(null);
   const [boardToDelete, setBoardToDelete] = useState<Id<"boards"> | null>(null);
+
+  if (user === undefined) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+  if (user === null) {
+    router.replace("/");
+    return null;
+  }
 
   const handleSave = (data: {
     name: string;

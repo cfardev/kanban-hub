@@ -9,8 +9,9 @@ import { ShareBoardDialog } from "@/components/share-board-dialog";
 import { type ParticipantInfo, TaskDialog } from "@/components/task-dialog";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
-import { useAction, useQuery } from "convex/react";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { useCallback } from "react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ export default function BoardPage() {
   const boardId = params.boardId as string;
   const board = useQuery(api.boards.getById, { id: boardId as never });
   const tasks = useQuery(api.tasks.listByBoard, { boardId: boardId as never });
+  const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
   const participantIds = useQuery(api.boards.listParticipants, {
     boardId: boardId as never,
   });
@@ -64,6 +66,19 @@ export default function BoardPage() {
     setDialogOpen(true);
   };
 
+  const handleMoveTask = useCallback(
+    (taskId: Id<"tasks">, newStatus: string) => {
+      if (tasks === undefined) return;
+      const tasksInColumn = tasks.filter((t) => t.status === newStatus);
+      const newPosition =
+        tasksInColumn.length === 0
+          ? 0
+          : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
+      updateStatusAndPosition({ id: taskId, status: newStatus, position: newPosition });
+    },
+    [tasks, updateStatusAndPosition]
+  );
+
   useEffect(() => {
     if (board === null) {
       router.replace("/dashboard");
@@ -74,7 +89,24 @@ export default function BoardPage() {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-7xl">
-          <p className="text-muted-foreground">Cargando tablero...</p>
+          <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex min-w-[280px] flex-1 flex-col rounded-lg border border-border bg-card p-4"
+              >
+                <div className="mb-3 h-5 w-24 animate-pulse rounded bg-muted" />
+                <div className="flex flex-col gap-2">
+                  {[1, 2, 3].map((j) => (
+                    <div
+                      key={j}
+                      className="h-16 animate-pulse rounded border border-border bg-muted/50"
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -135,6 +167,7 @@ export default function BoardPage() {
           tasks={tasks}
           onTaskClick={openTask}
           onNewTask={openNewTask}
+          onMoveTask={handleMoveTask}
           participantsInfoMap={participantsInfoMap}
         />
         <TaskDialog

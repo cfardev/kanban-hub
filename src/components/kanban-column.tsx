@@ -3,7 +3,7 @@
 import type { ParticipantsInfoMap } from "@/components/kanban-board";
 import { TaskCard } from "@/components/task-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
@@ -29,26 +29,42 @@ export function KanbanColumn({
   tasks,
   onTaskClick,
   onNewTask,
+  onMoveTask,
   participantsInfoMap = {},
+  highlightDrop = false,
 }: {
   status: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
   onNewTask?: () => void;
+  onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
   participantsInfoMap?: ParticipantsInfoMap;
+  highlightDrop?: boolean;
 }) {
   const droppableId = `column-${status}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const itemIds = tasks.map((t) => t._id);
   const label = COLUMN_LABELS[status] ?? status;
 
+  const isEmpty = tasks.length === 0;
+
   return (
-    <motion.div ref={setNodeRef} className="flex min-w-0 flex-1 flex-col" variants={columnVariants}>
+    <motion.div
+      ref={setNodeRef}
+      className="flex min-w-[280px] flex-1 flex-col"
+      variants={columnVariants}
+    >
       <Card
-        className={cn("flex flex-1 flex-col transition-colors", isOver && "ring-2 ring-primary")}
+        className={cn(
+          "flex flex-1 flex-col transition-colors",
+          isOver && "ring-2 ring-primary",
+          highlightDrop && "ring-2 ring-green-500 ring-offset-2"
+        )}
       >
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">{label}</CardTitle>
+          <h2 className="text-sm font-medium">
+            {label} ({tasks.length})
+          </h2>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col gap-2 overflow-auto pb-4">
           <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
@@ -57,6 +73,7 @@ export function KanbanColumn({
                 key={task._id}
                 task={task}
                 onClick={onTaskClick}
+                onMoveTask={onMoveTask}
                 assigneeInfo={
                   task.assignee_id
                     ? {
@@ -69,6 +86,12 @@ export function KanbanColumn({
               />
             ))}
           </SortableContext>
+          {isEmpty ? (
+            <p className="py-6 text-center text-muted-foreground text-sm">
+              {isOver ? "Suelta aquí" : "No hay tareas"}
+              {status === "por_empezar" ? ". Arrastra una tarjeta o crea una nueva." : "."}
+            </p>
+          ) : null}
           {onNewTask ? (
             <Button
               variant="ghost"

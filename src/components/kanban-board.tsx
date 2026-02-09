@@ -39,15 +39,18 @@ export function KanbanBoard({
   tasks,
   onTaskClick,
   onNewTask,
+  onMoveTask,
   participantsInfoMap = {},
 }: {
   boardId: string;
   tasks: Task[];
   onTaskClick?: (task: Task) => void;
   onNewTask?: () => void;
+  onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
   participantsInfoMap?: ParticipantsInfoMap;
 }) {
   const [activeId, setActiveId] = useState<Id<"tasks"> | null>(null);
+  const [lastDroppedColumn, setLastDroppedColumn] = useState<string | null>(null);
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
 
   const sensors = useSensors(
@@ -82,6 +85,8 @@ export function KanbanBoard({
         status,
         position: newPosition,
       });
+      setLastDroppedColumn(status);
+      setTimeout(() => setLastDroppedColumn(null), 1500);
     },
     [tasks, updateStatusAndPosition]
   );
@@ -104,21 +109,25 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
     >
       <motion.div
-        className="grid gap-4 md:grid-cols-3"
+        className="overflow-x-auto pb-2"
         variants={columnContainerVariants}
         initial="hidden"
         animate="visible"
       >
-        {COLUMNS.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            tasks={tasksByStatus[status]}
-            onTaskClick={onTaskClick ?? (() => {})}
-            onNewTask={status === "por_empezar" ? onNewTask : undefined}
-            participantsInfoMap={participantsInfoMap}
-          />
-        ))}
+        <div className="flex min-h-0 gap-4 md:grid md:grid-cols-3 md:overflow-visible">
+          {COLUMNS.map((status) => (
+            <KanbanColumn
+              key={status}
+              status={status}
+              tasks={tasksByStatus[status]}
+              onTaskClick={onTaskClick ?? (() => {})}
+              onNewTask={status === "por_empezar" ? onNewTask : undefined}
+              onMoveTask={onMoveTask}
+              participantsInfoMap={participantsInfoMap}
+              highlightDrop={lastDroppedColumn === status}
+            />
+          ))}
+        </div>
       </motion.div>
       <DragOverlay dropAnimation={null}>
         {activeTask ? (
