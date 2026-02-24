@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+
 import { motion } from "motion/react";
 
 type Task = Doc<"tasks">;

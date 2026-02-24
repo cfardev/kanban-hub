@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { LayoutDashboard, Pencil, Plus, Trash2 } from "lucide-react";
+import { LayoutGrid, Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ const boardCardVariants = {
     transition: { delay: i * 0.06 + 0.05 },
   }),
 };
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -177,9 +178,17 @@ export default function DashboardPage() {
             transition={{ duration: 0.3 }}
           >
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground mb-4">No hay tableros aún</p>
-                <Button variant="outline" onClick={openCreateDialog} className="cursor-pointer">
+              <CardContent className="flex flex-col items-center justify-center gap-4 py-16">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted">
+                  <LayoutGrid className="h-8 w-8 text-muted-foreground/60" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-foreground">No hay tableros aún</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Crea tu primer tablero para empezar a organizar tus tareas
+                  </p>
+                </div>
+                <Button onClick={openCreateDialog} className="cursor-pointer">
                   <Plus className="h-4 w-4 mr-2" />
                   Crear primer tablero
                 </Button>
@@ -211,8 +220,8 @@ export default function DashboardPage() {
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
-                            <LayoutDashboard className="h-5 w-5 shrink-0 text-muted-foreground" />
-                            <CardTitle className="text-lg truncate">{board.name}</CardTitle>
+                            <LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <CardTitle className="text-base truncate">{board.name}</CardTitle>
                           </div>
                           <div className="flex shrink-0 gap-1">
                             <Button
@@ -226,7 +235,7 @@ export default function DashboardPage() {
                               }}
                               aria-label="Editar"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -239,12 +248,14 @@ export default function DashboardPage() {
                               }}
                               aria-label="Eliminar"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </div>
                         {board.description && (
-                          <CardDescription className="mt-2">{board.description}</CardDescription>
+                          <CardDescription className="mt-1 line-clamp-2">
+                            {board.description}
+                          </CardDescription>
                         )}
                       </CardHeader>
                       <CardContent>
@@ -253,7 +264,8 @@ export default function DashboardPage() {
                           {board.updated_at !== board.created_at && (
                             <>
                               {" "}
-                              · Actualizado {new Date(board.updated_at).toLocaleDateString("es-ES")}
+                              · Actualizado{" "}
+                              {new Date(board.updated_at).toLocaleDateString("es-ES")}
                             </>
                           )}
                         </div>

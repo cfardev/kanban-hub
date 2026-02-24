@@ -179,3 +179,10 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+@layer utilities {
+  .bg-grid-dots {
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}

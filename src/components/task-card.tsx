@@ -57,6 +57,7 @@ const MOVE_COLUMNS: { status: string; label: string }[] = [
   { status: "terminado", label: "Terminado" },
 ];
 
+
 export function TaskCard({
   task,
   onClick,

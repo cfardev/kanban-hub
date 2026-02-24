@@ -88,19 +88,30 @@ export default function BoardPage() {
   if (board === undefined || tasks === undefined || participantIds === undefined) {
     return (
       <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="flex items-center justify-between border-b pb-4">
+            <div className="h-6 w-28 animate-pulse rounded bg-muted" />
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
+              <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
+            </div>
+          </div>
           <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex min-w-[280px] flex-1 flex-col rounded-lg border border-border bg-card p-4"
+                className="flex min-w-[280px] flex-1 flex-col rounded-lg border-t-2 border border-border bg-card p-4"
               >
-                <div className="mb-3 h-5 w-24 animate-pulse rounded bg-muted" />
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted" />
+                  <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                  <div className="ml-auto h-5 w-8 animate-pulse rounded-full bg-muted" />
+                </div>
                 <div className="flex flex-col gap-2">
                   {[1, 2, 3].map((j) => (
                     <div
                       key={j}
-                      className="h-16 animate-pulse rounded border border-border bg-muted/50"
+                      className="h-16 animate-pulse rounded border-l-2 border border-border bg-muted/50"
                     />
                   ))}
                 </div>
@@ -127,24 +138,26 @@ export default function BoardPage() {
           </div>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="cursor-pointer" asChild>
+          <div className="flex min-w-0 items-center gap-3">
+            <Button variant="ghost" size="icon" className="shrink-0 cursor-pointer" asChild>
               <Link href="/dashboard" aria-label="Volver">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{board.name}</h1>
-              {board.description && <p className="text-muted-foreground">{board.description}</p>}
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-bold tracking-tight">{board.name}</h1>
+              {board.description && (
+                <p className="truncate text-sm text-muted-foreground">{board.description}</p>
+              )}
             </div>
             {isOwner && (
               <Button
                 variant="outline"
                 size="sm"
-                className="cursor-pointer"
+                className="ml-1 shrink-0 cursor-pointer"
                 onClick={() => setShareDialogOpen(true)}
               >
-                <UserPlus className="h-4 w-4 mr-2" />
+                <UserPlus className="h-3.5 w-3.5 mr-1.5" />
                 Compartir
               </Button>
             )}
