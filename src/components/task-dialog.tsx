@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
+import { LuCheck, LuPlus, LuSquareCheck, LuTrash2, LuX } from "react-icons/lu";
 import { useEffect, useState } from "react";
 
 type Task = Doc<"tasks">;
@@ -138,39 +140,55 @@ export function TaskDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-xl p-0 gap-0 overflow-hidden">
           <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle>{isCreate ? "Nueva tarea" : "Editar tarea"}</DialogTitle>
-              <DialogDescription>
-                {isCreate ? "Añade los datos de la tarea." : "Modifica los datos de la tarea."}
-              </DialogDescription>
+            <DialogHeader className="px-6 pt-6 pb-2 space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <LuSquareCheck className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <DialogTitle className="text-base font-semibold tracking-tight">
+                    {isCreate ? "Nueva tarea" : "Editar tarea"}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    {isCreate ? "Añade los datos de la tarea." : "Modifica los datos de la tarea."}
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-5 px-6 py-5">
               <div className="grid gap-2">
-                <Label htmlFor="task-title">Título</Label>
+                <Label htmlFor="task-title" className="text-xs font-medium">
+                  Título
+                </Label>
                 <Input
                   id="task-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Título de la tarea"
                   required
+                  className="h-9 rounded-md"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="task-description">Descripción</Label>
-                <Input
+                <Label htmlFor="task-description" className="text-xs font-medium">
+                  Descripción
+                </Label>
+                <Textarea
                   id="task-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descripción (opcional)"
+                  rows={3}
+                  className="min-h-[72px] resize-none rounded-md"
                 />
               </div>
               {showAssignee && (
                 <div className="grid gap-2">
-                  <Label>Asignar a</Label>
+                  <Label className="text-xs font-medium">Asignar a</Label>
                   <Select value={assigneeId} onValueChange={(v) => setAssigneeId(v)}>
-                    <SelectTrigger className="w-full cursor-pointer">
+                    <SelectTrigger className="w-full h-9 rounded-md cursor-pointer [&>span]:flex [&>span]:items-center [&>span]:gap-2">
                       <SelectValue placeholder="Sin asignar" />
                     </SelectTrigger>
                     <SelectContent>
@@ -187,7 +205,9 @@ export function TaskDialog({
                             className="cursor-pointer flex items-center gap-2"
                           >
                             <Avatar className="h-6 w-6 shrink-0">
-                              {info?.image ? <AvatarImage src={info.image} alt={name} /> : null}
+                              {info?.image ? (
+                                <AvatarImage src={info.image} alt={name} />
+                              ) : null}
                               <AvatarFallback className="text-xs">
                                 {getInitials(info?.name)}
                               </AvatarFallback>
@@ -201,29 +221,47 @@ export function TaskDialog({
                 </div>
               )}
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
-              {!isCreate && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDeleteClick}
-                  className="mr-auto cursor-pointer"
-                >
-                  Eliminar
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="cursor-pointer"
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" className="cursor-pointer">
-                {isCreate ? "Crear" : "Guardar"}
-              </Button>
-            </DialogFooter>
+            <div className="border-t border-border bg-muted/30 px-6 py-4">
+              <DialogFooter className="flex-row flex-wrap gap-2 sm:justify-between">
+                {!isCreate ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDeleteClick}
+                    className="cursor-pointer rounded-md h-9 gap-1.5"
+                  >
+                    <LuTrash2 className="size-4 shrink-0" />
+                    Eliminar
+                  </Button>
+                ) : (
+                  <div />
+                )}
+                <div className="flex gap-2 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    className="cursor-pointer rounded-md h-9 gap-1.5"
+                  >
+                    <LuX className="size-4 shrink-0" />
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="cursor-pointer rounded-md h-9 gap-1.5">
+                    {isCreate ? (
+                      <>
+                        <LuPlus className="size-4 shrink-0" />
+                        Crear
+                      </>
+                    ) : (
+                      <>
+                        <LuCheck className="size-4 shrink-0" />
+                        Guardar
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

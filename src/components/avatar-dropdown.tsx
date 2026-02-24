@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -82,25 +81,39 @@ export function AvatarDropdown() {
           </Avatar>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{displayName}</p>
+      <DropdownMenuContent align="end" className="w-64 rounded-xl p-0">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <Avatar className="h-10 w-10 shrink-0 ring-2 ring-background">
+            {userPicture && <AvatarImage src={userPicture} alt={displayName} />}
+            <AvatarFallback className="bg-primary text-sm text-primary-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{displayName}</p>
             {displayEmail && (
-              <p className="text-xs leading-none text-muted-foreground">{displayEmail}</p>
+              <p className="truncate text-xs text-muted-foreground">{displayEmail}</p>
             )}
           </div>
-        </DropdownMenuLabel>
+        </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onSelect={() => setProfileOpen(true)}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Perfil</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={handleLogout} className="cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Cerrar sesión</span>
-        </DropdownMenuItem>
+        <div className="p-2">
+          <DropdownMenuItem
+            className="cursor-pointer rounded-md"
+            onSelect={() => setProfileOpen(true)}
+          >
+            <User className="mr-3 h-4 w-4 shrink-0" />
+            Perfil
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={handleLogout}
+            className="cursor-pointer rounded-md"
+          >
+            <LogOut className="mr-3 h-4 w-4 shrink-0" />
+            Cerrar sesión
+          </DropdownMenuItem>
+        </div>
       </DropdownMenuContent>
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </DropdownMenu>
