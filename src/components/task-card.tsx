@@ -105,7 +105,7 @@ export function TaskCard({
         >
           <Card
             className={cn(
-              "cursor-grab active:cursor-grabbing hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "cursor-pointer active:cursor-grabbing hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isDragging && "opacity-50",
               className
             )}
