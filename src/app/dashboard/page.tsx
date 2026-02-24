@@ -27,15 +27,16 @@ import { useState } from "react";
 
 const boardGridVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
-  },
+  visible: { opacity: 1 },
 };
 
 const boardCardVariants = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06 + 0.05 },
+  }),
 };
 
 export default function DashboardPage() {
@@ -68,19 +69,19 @@ export default function DashboardPage() {
     return null;
   }
 
-  const handleSave = (data: {
+  const handleSave = async (data: {
     name: string;
     description?: string;
     id?: Id<"boards">;
   }) => {
     if (data.id) {
-      updateBoard({
+      await updateBoard({
         id: data.id,
         name: data.name,
         description: data.description,
       });
     } else {
-      createBoard({ name: data.name, description: data.description });
+      await createBoard({ name: data.name, description: data.description });
     }
     setEditingBoard(null);
     setDialogOpen(false);
@@ -192,8 +193,14 @@ export default function DashboardPage() {
             initial="hidden"
             animate="visible"
           >
-            {boards.map((board) => (
-              <motion.div key={board._id} variants={boardCardVariants}>
+            {boards.map((board, i) => (
+              <motion.div
+                key={board._id}
+                custom={i}
+                variants={boardCardVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <Link href={`/dashboard/boards/${board._id}`} className="cursor-pointer block">
                   <motion.div
                     whileHover={{ y: -2 }}
