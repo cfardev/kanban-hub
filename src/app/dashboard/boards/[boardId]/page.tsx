@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { useCallback } from "react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useCallback } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type Task = Doc<"tasks">;
@@ -71,9 +71,7 @@ export default function BoardPage() {
       if (tasks === undefined) return;
       const tasksInColumn = tasks.filter((t) => t.status === newStatus);
       const newPosition =
-        tasksInColumn.length === 0
-          ? 0
-          : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
+        tasksInColumn.length === 0 ? 0 : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
       updateStatusAndPosition({ id: taskId, status: newStatus, position: newPosition });
     },
     [tasks, updateStatusAndPosition]

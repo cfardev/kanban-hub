@@ -62,6 +62,12 @@
 - Optimize for mobile devices (mobile-first)
 - Every object clickeable should haver cursor-pointer class
 
+## Linting y Type Checking
+
+- Run lint: `pnpm biome check .`
+- Run format: `pnpm biome format .`
+- Run typecheck: `pnpm tsc --noEmit`
+
 ## Conventional Commits
 
 - Use Conventional Commits format for all commit messages

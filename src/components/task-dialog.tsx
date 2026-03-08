@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,11 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { LuCheck, LuPlus, LuSquareCheck, LuTrash2, LuX } from "react-icons/lu";
 import { useEffect, useState } from "react";
+import { LuCheck, LuPlus, LuSquareCheck, LuTrash2, LuX } from "react-icons/lu";
 
 type Task = Doc<"tasks">;
 
@@ -205,9 +205,7 @@ export function TaskDialog({
                             className="cursor-pointer flex items-center gap-2"
                           >
                             <Avatar className="h-6 w-6 shrink-0">
-                              {info?.image ? (
-                                <AvatarImage src={info.image} alt={name} />
-                              ) : null}
+                              {info?.image ? <AvatarImage src={info.image} alt={name} /> : null}
                               <AvatarFallback className="text-xs">
                                 {getInitials(info?.name)}
                               </AvatarFallback>

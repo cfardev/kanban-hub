@@ -33,8 +33,7 @@ const COLUMN_CONFIG: Record<
     label: "Por Empezar",
     dotClass: "bg-blue-500",
     labelClass: "text-blue-700 dark:text-blue-400",
-    badgeClass:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
     ringClass: "ring-blue-400/60",
     emptyText: "Arrastra o crea una tarea nueva",
   },
@@ -42,8 +41,7 @@ const COLUMN_CONFIG: Record<
     label: "En Curso",
     dotClass: "bg-amber-500",
     labelClass: "text-amber-700 dark:text-amber-400",
-    badgeClass:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ringClass: "ring-amber-400/60",
     emptyText: "Mueve tareas aquí para empezar",
   },
@@ -51,8 +49,7 @@ const COLUMN_CONFIG: Record<
     label: "Terminado",
     dotClass: "bg-emerald-500",
     labelClass: "text-emerald-700 dark:text-emerald-400",
-    badgeClass:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ringClass: "ring-emerald-400/60",
     emptyText: "Las tareas completadas aparecerán aquí",
   },
@@ -104,15 +101,8 @@ export function KanbanColumn({
       >
         <CardHeader className="pb-2 pt-3">
           <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "h-2.5 w-2.5 shrink-0 rounded-full",
-                config.dotClass
-              )}
-            />
-            <h2 className={cn("text-sm font-semibold", config.labelClass)}>
-              {config.label}
-            </h2>
+            <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", config.dotClass)} />
+            <h2 className={cn("text-sm font-semibold", config.labelClass)}>{config.label}</h2>
             <span
               className={cn(
                 "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",

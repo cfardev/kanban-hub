@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { PageMotion } from "@/components/page-motion";
 import { getToken } from "@/lib/auth-server";
+import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -33,7 +33,10 @@ export default async function RootLayout({
   const token = await getToken();
   return (
     <html lang="es" suppressHydrationWarning translate="no">
-      <body className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <ConvexClientProvider initialToken={token}>
           <PageMotion>{children}</PageMotion>
         </ConvexClientProvider>

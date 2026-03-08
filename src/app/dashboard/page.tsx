@@ -39,7 +39,6 @@ const boardCardVariants = {
   }),
 };
 
-
 export default function DashboardPage() {
   const router = useRouter();
   const user = useQuery(api.auth.getCurrentUser);
@@ -264,8 +263,7 @@ export default function DashboardPage() {
                           {board.updated_at !== board.created_at && (
                             <>
                               {" "}
-                              · Actualizado{" "}
-                              {new Date(board.updated_at).toLocaleDateString("es-ES")}
+                              · Actualizado {new Date(board.updated_at).toLocaleDateString("es-ES")}
                             </>
                           )}
                         </div>
