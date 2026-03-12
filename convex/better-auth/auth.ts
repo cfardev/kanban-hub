@@ -16,8 +16,8 @@ export const authComponent = createClient<DataModel, typeof schema>(components.b
 
 // Better Auth Options
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
-  // Use SITE_URL from env, or fallback to localhost for development
-  const baseURL = process.env.SITE_URL || "http://localhost:3000";
+  // Use BETTER_AUTH_BASE_URL or SITE_URL from env, or fallback to localhost for development
+  const baseURL = process.env.BETTER_AUTH_BASE_URL || process.env.SITE_URL || "http://localhost:3000";
 
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -43,9 +43,16 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         }
       : undefined;
 
+  const trustedOrigins = [
+    "http://localhost:3000",
+    "https://kanban-hub-theta.vercel.app",
+    ...(process.env.SITE_URL ? [process.env.SITE_URL] : []),
+  ];
+
   return {
     appName: "Kanban Hub",
     baseURL,
+    trustedOrigins,
     secret: process.env.BETTER_AUTH_SECRET,
     database: authComponent.adapter(ctx),
     account: {

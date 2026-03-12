@@ -26,20 +26,19 @@ export default function SignInPage() {
     setError(null);
     setIsLoading(true);
 
-    try {
-      await authClient.signIn.email({
-        email,
-        password,
-        callbackURL: callbackUrl,
-      });
+    const { error: authError } = await authClient.signIn.email({
+      email,
+      password,
+      callbackURL: callbackUrl,
+    });
 
-      // Use window.location.href for full page reload to ensure session cookie
-      // is properly set and authentication state is refreshed
-      window.location.href = callbackUrl;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in");
+    if (authError) {
+      setError(authError.message ?? "Failed to sign in");
       setIsLoading(false);
+      return;
     }
+
+    window.location.href = callbackUrl;
   };
 
   return (
