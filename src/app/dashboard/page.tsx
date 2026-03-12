@@ -23,7 +23,7 @@ import { LayoutGrid, Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const boardGridVariants = {
   hidden: { opacity: 0 },
@@ -55,7 +55,13 @@ export default function DashboardPage() {
   } | null>(null);
   const [boardToDelete, setBoardToDelete] = useState<Id<"boards"> | null>(null);
 
-  if (user === undefined) {
+  useEffect(() => {
+    if (user === null) {
+      router.replace("/");
+    }
+  }, [user, router]);
+
+  if (user === undefined || user === null) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-7xl">
@@ -63,10 +69,6 @@ export default function DashboardPage() {
         </div>
       </div>
     );
-  }
-  if (user === null) {
-    router.replace("/");
-    return null;
   }
 
   const handleSave = async (data: {
