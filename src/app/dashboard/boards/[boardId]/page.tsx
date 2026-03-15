@@ -7,6 +7,7 @@ import { KanbanBoard } from "@/components/kanban-board";
 import { Logo } from "@/components/logo";
 import { ShareBoardDialog } from "@/components/share-board-dialog";
 import { type ParticipantInfo, TaskDialog } from "@/components/task-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -131,6 +132,7 @@ export default function BoardPage() {
         <div className="flex items-center justify-between border-b pb-4">
           <Logo href="/dashboard" className="text-xl" />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <InvitationNotifications />
             <AvatarDropdown />
           </div>

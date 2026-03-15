@@ -4,6 +4,7 @@ import { AvatarDropdown } from "@/components/avatar-dropdown";
 import { BoardDialog } from "@/components/board-dialog";
 import { InvitationNotifications } from "@/components/invitation-notifications";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,6 +127,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between border-b pb-4">
           <Logo href="/dashboard" className="text-xl" />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <InvitationNotifications />
             <AvatarDropdown />
           </div>

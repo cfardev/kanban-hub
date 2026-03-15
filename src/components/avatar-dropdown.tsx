@@ -1,7 +1,6 @@
 "use client";
 
 import { ProfileSheet } from "@/components/profile-sheet";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -99,8 +98,6 @@ export function AvatarDropdown() {
         </div>
         <DropdownMenuSeparator />
         <div className="p-2">
-          <ThemeToggle />
-          <DropdownMenuSeparator className="my-1" />
           <DropdownMenuItem
             className="cursor-pointer rounded-md"
             onSelect={() => setProfileOpen(true)}

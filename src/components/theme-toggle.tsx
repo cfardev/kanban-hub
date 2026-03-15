@@ -10,18 +10,13 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="flex w-full cursor-pointer items-center rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-muted focus:outline-none"
+      className="group relative inline-flex cursor-pointer items-center justify-center rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-[0.97]"
+      aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
       {theme === "dark" ? (
-        <>
-          <Sun className="mr-3 h-4 w-4 shrink-0" />
-          Claro
-        </>
+        <Sun className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:rotate-180" />
       ) : (
-        <>
-          <Moon className="mr-3 h-4 w-4 shrink-0" />
-          Oscuro
-        </>
+        <Moon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:-rotate-12" />
       )}
     </button>
   );
