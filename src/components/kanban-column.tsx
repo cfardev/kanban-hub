@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-import { useDroppable } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
+import { Droppable } from "react-beautiful-dnd";
 
 const columnVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -75,9 +74,6 @@ export function KanbanColumn({
   highlightDrop?: boolean;
   tags?: Tag[];
 }) {
-  const droppableId = `column-${status}`;
-  const { setNodeRef, isOver } = useDroppable({ id: droppableId });
-  const itemIds = tasks.map((t) => t._id);
   const config = COLUMN_CONFIG[status] ?? {
     label: status,
     dotClass: "bg-muted-foreground",
@@ -90,75 +86,86 @@ export function KanbanColumn({
   const isEmpty = tasks.length === 0;
 
   return (
-    <motion.div
-      ref={setNodeRef}
-      className="flex min-w-[280px] flex-1 flex-col"
-      variants={columnVariants}
+    <Droppable
+      droppableId={status}
+      direction="vertical"
+      isDropDisabled={false}
+      isCombineEnabled={false}
+      ignoreContainerClipping={false}
     >
-      <Card
-        className={cn(
-          "flex flex-1 flex-col border-border/80 bg-background/55 transition-all duration-200",
-          isOver && cn("ring-2 ring-offset-2", config.ringClass),
-          highlightDrop && "ring-2 ring-emerald-400/60 ring-offset-2"
-        )}
-      >
-        <CardHeader className="pb-2 pt-3">
-          <div className="flex items-center gap-2">
-            <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", config.dotClass)} />
-            <h2 className={cn("text-sm font-semibold tracking-tight", config.labelClass)}>
-              {config.label}
-            </h2>
-            <span
-              className={cn(
-                "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
-                config.badgeClass
-              )}
-            >
-              {tasks.length}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-1 flex-col gap-2 overflow-auto pb-4">
-          <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-            {tasks.map((task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onClick={onTaskClick}
-                onMoveTask={onMoveTask}
-                assigneeInfo={
-                  task.assignee_id
-                    ? {
-                        _id: task.assignee_id,
-                        name: participantsInfoMap[task.assignee_id]?.name ?? null,
-                        image: participantsInfoMap[task.assignee_id]?.image ?? null,
-                      }
-                    : null
-                }
-                tags={tags}
-              />
-            ))}
-          </SortableContext>
-          {isEmpty ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-1 py-8">
-              <p className="text-center text-sm font-medium text-muted-foreground/60">
-                {isOver ? "Suelta aquí" : config.emptyText}
-              </p>
-            </div>
-          ) : null}
-          {onNewTask ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-auto w-full cursor-pointer justify-start gap-2 text-muted-foreground hover:text-foreground"
-              onClick={onNewTask}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Nueva tarea
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    </motion.div>
+      {(provided, snapshot) => (
+        <motion.div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          className="flex min-w-[280px] flex-1 flex-col"
+          variants={columnVariants}
+        >
+          <Card
+            className={cn(
+              "flex flex-1 flex-col border-border/80 bg-background/55 transition-all duration-200",
+              snapshot.isDraggingOver && cn("ring-2 ring-offset-2", config.ringClass),
+              highlightDrop && "ring-2 ring-emerald-400/60 ring-offset-2"
+            )}
+          >
+            <CardHeader className="pb-2 pt-3">
+              <div className="flex items-center gap-2">
+                <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", config.dotClass)} />
+                <h2 className={cn("text-sm font-semibold tracking-tight", config.labelClass)}>
+                  {config.label}
+                </h2>
+                <span
+                  className={cn(
+                    "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
+                    config.badgeClass
+                  )}
+                >
+                  {tasks.length}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col gap-2 overflow-auto pb-4">
+              {tasks.map((task, index) => (
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  index={index}
+                  onClick={onTaskClick}
+                  onMoveTask={onMoveTask}
+                  assigneeInfo={
+                    task.assignee_id
+                      ? {
+                          _id: task.assignee_id,
+                          name: participantsInfoMap[task.assignee_id]?.name ?? null,
+                          image: participantsInfoMap[task.assignee_id]?.image ?? null,
+                        }
+                      : null
+                  }
+                  tags={tags}
+                />
+              ))}
+              {provided.placeholder}
+              {isEmpty ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-1 py-8">
+                  <p className="text-center text-sm font-medium text-muted-foreground/60">
+                    {snapshot.isDraggingOver ? "Suelta aqui" : config.emptyText}
+                  </p>
+                </div>
+              ) : null}
+              {onNewTask ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-auto w-full cursor-pointer justify-start gap-2 text-muted-foreground hover:text-foreground"
+                  onClick={onNewTask}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Nueva tarea
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </Droppable>
   );
 }

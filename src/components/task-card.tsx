@@ -27,12 +27,11 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { STATUS_OPTIONS, type TaskStatus } from "@/lib/task-status";
 import { cn } from "@/lib/utils";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useMutation } from "convex/react";
 import { ArrowLeft, ArrowRight, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { Draggable } from "react-beautiful-dnd";
 
 type Task = Doc<"tasks">;
 
@@ -111,6 +110,7 @@ function getPostItColor(status: string): {
 
 export function TaskCard({
   task,
+  index,
   onClick,
   className,
   assigneeInfo = null,
@@ -118,22 +118,14 @@ export function TaskCard({
   tags = [],
 }: {
   task: Task;
+  index: number;
   onClick: (task: Task) => void;
   className?: string;
   assigneeInfo?: AssigneeInfo | null;
   onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
   tags?: TagInfo[];
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: task._id,
-  });
   const removeTask = useMutation(api.tasks.remove);
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    transformOrigin: "center",
-  };
 
   const stopPropagation = (e: React.PointerEvent | React.MouseEvent) => {
     e.stopPropagation();
@@ -156,185 +148,194 @@ export function TaskCard({
 
   return (
     <>
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <motion.div
-          whileHover={!isDragging ? { scale: 1.01 } : undefined}
-          whileTap={!isDragging ? { scale: 0.99 } : undefined}
-          transition={{ duration: 0.15 }}
-        >
+      <Draggable draggableId={task._id} index={index}>
+        {(provided, snapshot) => (
           <div
-            className={cn(
-              "relative cursor-pointer rounded-lg border p-3 pl-4 transition-all duration-200 before:absolute before:inset-y-2 before:left-1.5 before:w-0.5 before:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring/60",
-              postItColor.bg,
-              postItColor.text,
-              postItColor.border,
-              postItColor.accent,
-              isDragging && "opacity-50",
-              className
-            )}
-            tabIndex={0}
-            role="button"
-            aria-label={task.title ? `Abrir ${task.title}` : "Abrir nota"}
-            onClick={() => onClick(task)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onClick(task);
-              }
-            }}
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={provided.draggableProps.style}
           >
-            <div className="flex flex-col gap-2">
-              <div className="flex items-start gap-2">
-                <h3 className="min-w-0 flex-1 text-sm leading-snug font-semibold tracking-tight">
-                  {task.title}
-                </h3>
-                <div className="flex items-center gap-1 shrink-0">
-                  {assigneeInfo ? (
-                    <div
-                      className="shrink-0 cursor-pointer"
-                      title={assigneeInfo.name ?? assigneeInfo._id}
-                    >
-                      <Avatar className="h-6 w-6 border border-border/70">
-                        {assigneeInfo.image ? (
-                          <AvatarImage src={assigneeInfo.image} alt={assigneeInfo.name ?? ""} />
-                        ) : null}
-                        <AvatarFallback className="bg-muted text-foreground text-[10px] font-medium">
-                          {getInitials(assigneeInfo.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                  ) : null}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                        onPointerDown={stopPropagation}
-                        onClick={stopPropagation}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      onClick={stopPropagation}
-                      className="cursor-pointer"
-                    >
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={(e) => {
-                          stopPropagation(e);
-                          onClick(task);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Editar
-                      </DropdownMenuItem>
-                      {onMoveTask ? (
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger className="cursor-pointer">
-                            <ArrowRight className="h-4 w-4 mr-2" />
-                            Mover a
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent>
-                            {STATUS_OPTIONS.map(({ value, label }) =>
-                              task.status === value ? null : (
-                                <DropdownMenuItem
-                                  key={value}
-                                  className="cursor-pointer"
-                                  onClick={(e) => {
-                                    stopPropagation(e);
-                                    onMoveTask(task._id, value);
-                                  }}
-                                >
-                                  {label}
-                                </DropdownMenuItem>
-                              )
-                            )}
-                          </DropdownMenuSubContent>
-                        </DropdownMenuSub>
+            <motion.div
+              whileHover={!snapshot.isDragging ? { scale: 1.01 } : undefined}
+              whileTap={!snapshot.isDragging ? { scale: 0.99 } : undefined}
+              transition={{ duration: 0.15 }}
+            >
+              <div
+                className={cn(
+                  "relative cursor-pointer rounded-lg border p-3 pl-4 transition-all duration-200 before:absolute before:inset-y-2 before:left-1.5 before:w-0.5 before:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring/60",
+                  postItColor.bg,
+                  postItColor.text,
+                  postItColor.border,
+                  postItColor.accent,
+                  snapshot.isDragging && "opacity-50",
+                  className
+                )}
+                tabIndex={0}
+                role="button"
+                aria-label={task.title ? `Abrir ${task.title}` : "Abrir nota"}
+                onClick={() => onClick(task)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onClick(task);
+                  }
+                }}
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <h3 className="min-w-0 flex-1 text-sm leading-snug font-semibold tracking-tight">
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {assigneeInfo ? (
+                        <div
+                          className="shrink-0 cursor-pointer"
+                          title={assigneeInfo.name ?? assigneeInfo._id}
+                        >
+                          <Avatar className="h-6 w-6 border border-border/70">
+                            {assigneeInfo.image ? (
+                              <AvatarImage src={assigneeInfo.image} alt={assigneeInfo.name ?? ""} />
+                            ) : null}
+                            <AvatarFallback className="bg-muted text-foreground text-[10px] font-medium">
+                              {getInitials(assigneeInfo.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
                       ) : null}
-                      <DropdownMenuItem
-                        variant="destructive"
-                        className="cursor-pointer"
-                        onClick={(e) => {
-                          stopPropagation(e);
-                          handleDeleteClick();
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              {task.tags && task.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 -mt-0.5">
-                  {task.tags.slice(0, 3).map((tagId) => {
-                    const tag = tags.find((t) => t._id === tagId);
-                    return tag ? (
-                      <TagBadge
-                        key={tag._id}
-                        name={tag.name}
-                        color={tag.color as ColorClass}
-                        size="sm"
-                      />
-                    ) : null;
-                  })}
-                  {task.tags.length > 3 && (
-                    <span className="text-[10px] opacity-60 px-1 py-0.5 font-medium">
-                      +{task.tags.length - 3}
-                    </span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                            onPointerDown={stopPropagation}
+                            onClick={stopPropagation}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          onClick={stopPropagation}
+                          className="cursor-pointer"
+                        >
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              stopPropagation(e);
+                              onClick(task);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          {onMoveTask ? (
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="cursor-pointer">
+                                <ArrowRight className="h-4 w-4 mr-2" />
+                                Mover a
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                {STATUS_OPTIONS.map(({ value, label }) =>
+                                  task.status === value ? null : (
+                                    <DropdownMenuItem
+                                      key={value}
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        stopPropagation(e);
+                                        onMoveTask(task._id, value);
+                                      }}
+                                    >
+                                      {label}
+                                    </DropdownMenuItem>
+                                  )
+                                )}
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                          ) : null}
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              stopPropagation(e);
+                              handleDeleteClick();
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  {task.tags && task.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 -mt-0.5">
+                      {task.tags.slice(0, 3).map((tagId) => {
+                        const tag = tags.find((t) => t._id === tagId);
+                        return tag ? (
+                          <TagBadge
+                            key={tag._id}
+                            name={tag.name}
+                            color={tag.color as ColorClass}
+                            size="sm"
+                          />
+                        ) : null;
+                      })}
+                      {task.tags.length > 3 && (
+                        <span className="text-[10px] opacity-60 px-1 py-0.5 font-medium">
+                          +{task.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-            {task.description ? (
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                {task.description}
-              </p>
-            ) : null}
-            {onMoveTask ? (
-              <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/40">
-                {previous ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                    onPointerDown={stopPropagation}
-                    onClick={(e) => {
-                      stopPropagation(e);
-                      onMoveTask(task._id, previous.value);
-                    }}
-                  >
-                    <ArrowLeft className="mr-1 size-2.5" />
-                    {previous.label}
-                  </Button>
+                {task.description ? (
+                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                    {task.description}
+                  </p>
                 ) : null}
-                {next ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                    onPointerDown={stopPropagation}
-                    onClick={(e) => {
-                      stopPropagation(e);
-                      onMoveTask(task._id, next.value);
-                    }}
-                  >
-                    {next.label}
-                    <ArrowRight className="ml-1 size-2.5" />
-                  </Button>
+                {onMoveTask ? (
+                  <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/40">
+                    {previous ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                        onPointerDown={stopPropagation}
+                        onClick={(e) => {
+                          stopPropagation(e);
+                          onMoveTask(task._id, previous.value);
+                        }}
+                      >
+                        <ArrowLeft className="mr-1 size-2.5" />
+                        {previous.label}
+                      </Button>
+                    ) : null}
+                    {next ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                        onPointerDown={stopPropagation}
+                        onClick={(e) => {
+                          stopPropagation(e);
+                          onMoveTask(task._id, next.value);
+                        }}
+                      >
+                        {next.label}
+                        <ArrowRight className="ml-1 size-2.5" />
+                      </Button>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
-            ) : null}
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
+        )}
+      </Draggable>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

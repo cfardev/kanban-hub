@@ -3,22 +3,10 @@
 import { KanbanColumn } from "@/components/kanban-column";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import {
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useMutation } from "convex/react";
 import { motion } from "motion/react";
 import { useCallback, useState } from "react";
-import { TaskCardOverlay } from "./task-card-overlay";
+import { DragDropContext, type DropResult } from "react-beautiful-dnd";
 
 const columnContainerVariants = {
   hidden: { opacity: 0 },
@@ -52,34 +40,15 @@ export function KanbanBoard({
   participantsInfoMap?: ParticipantsInfoMap;
   tags?: Tag[];
 }) {
-  const [activeId, setActiveId] = useState<Id<"tasks"> | null>(null);
   const [lastDroppedColumn, setLastDroppedColumn] = useState<string | null>(null);
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as Id<"tasks">);
-  }, []);
-
   const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveId(null);
-      if (!over) return;
-      const taskId = active.id as Id<"tasks">;
-      let targetStatus: string | undefined;
-      if (typeof over.id === "string" && over.id.startsWith("column-")) {
-        targetStatus = over.id.replace("column-", "");
-      } else {
-        const overTask = tasks.find((t) => t._id === over.id);
-        targetStatus = overTask?.status;
-      }
+    (result: DropResult) => {
+      const { destination, draggableId } = result;
+      if (!destination) return;
+      const taskId = draggableId as Id<"tasks">;
+      const targetStatus = destination.droppableId;
       if (!targetStatus || !COLUMNS.includes(targetStatus as (typeof COLUMNS)[number])) return;
       const status = targetStatus;
       const tasksInColumn = tasks.filter((t) => t.status === status);
@@ -104,15 +73,8 @@ export function KanbanBoard({
     {} as Record<(typeof COLUMNS)[number], Task[]>
   );
 
-  const activeTask = activeId ? tasks.find((t) => t._id === activeId) : null;
-
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
+    <DragDropContext onDragEnd={handleDragEnd}>
       <motion.div
         className="overflow-x-auto pb-2"
         variants={columnContainerVariants}
@@ -135,23 +97,6 @@ export function KanbanBoard({
           ))}
         </div>
       </motion.div>
-      <DragOverlay dropAnimation={null}>
-        {activeTask ? (
-          <TaskCardOverlay
-            task={activeTask}
-            assigneeInfo={
-              activeTask.assignee_id
-                ? {
-                    _id: activeTask.assignee_id,
-                    name: participantsInfoMap[activeTask.assignee_id]?.name ?? null,
-                    image: participantsInfoMap[activeTask.assignee_id]?.image ?? null,
-                  }
-                : null
-            }
-            tags={tags}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    </DragDropContext>
   );
 }
