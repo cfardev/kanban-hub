@@ -57,7 +57,9 @@ export function KanbanBoard({
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 10 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 

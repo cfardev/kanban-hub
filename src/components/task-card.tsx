@@ -132,6 +132,7 @@ export function TaskCard({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    transformOrigin: "center",
   };
 
   const stopPropagation = (e: React.PointerEvent | React.MouseEvent) => {
@@ -289,46 +290,47 @@ export function TaskCard({
                   )}
                 </div>
               )}
-              {onMoveTask ? (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {previous ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 cursor-pointer rounded-full px-2.5 text-[11px]"
-                      onPointerDown={stopPropagation}
-                      onClick={(e) => {
-                        stopPropagation(e);
-                        onMoveTask(task._id, previous.value);
-                      }}
-                    >
-                      <ArrowLeft className="mr-1 size-3" />
-                      {previous.label}
-                    </Button>
-                  ) : null}
-                  {next ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-7 cursor-pointer rounded-full px-2.5 text-[11px]"
-                      onPointerDown={stopPropagation}
-                      onClick={(e) => {
-                        stopPropagation(e);
-                        onMoveTask(task._id, next.value);
-                      }}
-                    >
-                      {next.label}
-                      <ArrowRight className="ml-1 size-3" />
-                    </Button>
-                  ) : null}
-                </div>
-              ) : null}
             </div>
             {task.description ? (
               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                 {task.description}
               </p>
+            ) : null}
+            {onMoveTask ? (
+              <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/40">
+                {previous ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                    onPointerDown={stopPropagation}
+                    onClick={(e) => {
+                      stopPropagation(e);
+                      onMoveTask(task._id, previous.value);
+                    }}
+                  >
+                    <ArrowLeft className="mr-1 size-2.5" />
+                    {previous.label}
+                  </Button>
+                ) : null}
+                {next ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 cursor-pointer rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                    onPointerDown={stopPropagation}
+                    onClick={(e) => {
+                      stopPropagation(e);
+                      onMoveTask(task._id, next.value);
+                    }}
+                  >
+                    {next.label}
+                    <ArrowRight className="ml-1 size-2.5" />
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </motion.div>

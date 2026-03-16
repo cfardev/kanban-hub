@@ -175,20 +175,7 @@ export function TagSelector({
                     key={color}
                     type="button"
                     onClick={() => setNewTagColor(color)}
-                    className={
-                      `h-5 w-5 rounded-full transition-transform cursor-pointer ` +
-                      `${newTagColor === color ? "ring-2 ring-primary ring-offset-1 scale-110" : "ring-1 ring-border"} ` +
-                      `${color === "red" ? "bg-red-500" : ""}` +
-                      `${color === "blue" ? "bg-blue-500" : ""}` +
-                      `${color === "green" ? "bg-green-500" : ""}` +
-                      `${color === "yellow" ? "bg-yellow-500" : ""}` +
-                      `${color === "purple" ? "bg-purple-500" : ""}` +
-                      `${color === "pink" ? "bg-pink-500" : ""}` +
-                      `${color === "orange" ? "bg-orange-500" : ""}` +
-                      `${color === "cyan" ? "bg-cyan-500" : ""}` +
-                      `${color === "slate" ? "bg-slate-500" : ""}` +
-                      `${color === "indigo" ? "bg-indigo-500" : ""}`
-                    }
+                    className={`h-5 w-5 rounded-full transition-transform cursor-pointer ${newTagColor === color ? "ring-2 ring-primary ring-offset-1 scale-110" : "ring-1 ring-border"} ${color === "red" ? "bg-red-500" : ""}${color === "blue" ? "bg-blue-500" : ""}${color === "green" ? "bg-green-500" : ""}${color === "yellow" ? "bg-yellow-500" : ""}${color === "purple" ? "bg-purple-500" : ""}${color === "pink" ? "bg-pink-500" : ""}${color === "orange" ? "bg-orange-500" : ""}${color === "cyan" ? "bg-cyan-500" : ""}${color === "slate" ? "bg-slate-500" : ""}${color === "indigo" ? "bg-indigo-500" : ""}`}
                     aria-label={`Usar color ${color}`}
                   />
                 ))}
