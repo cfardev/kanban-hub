@@ -1,5 +1,6 @@
 "use client";
 
+import { type ColorClass, TagBadge } from "@/components/tag-badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +25,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { STATUS_OPTIONS, type TaskStatus } from "@/lib/task-status";
 import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation } from "convex/react";
-import { ArrowRight, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 
@@ -38,6 +40,12 @@ type AssigneeInfo = {
   _id: string;
   name: string | null;
   image: string | null;
+};
+
+type TagInfo = {
+  _id: Id<"tags">;
+  name: string;
+  color: ColorClass | string;
 };
 
 function getInitials(name?: string | null): string {
@@ -51,11 +59,55 @@ function getInitials(name?: string | null): string {
   return "?";
 }
 
-const MOVE_COLUMNS: { status: string; label: string }[] = [
-  { status: "por_empezar", label: "Por Empezar" },
-  { status: "en_curso", label: "En curso" },
-  { status: "terminado", label: "Terminado" },
-];
+function getAdjacentStatuses(status: TaskStatus) {
+  const currentIndex = STATUS_OPTIONS.findIndex((option) => option.value === status);
+
+  return {
+    previous: currentIndex > 0 ? STATUS_OPTIONS[currentIndex - 1] : null,
+    next:
+      currentIndex >= 0 && currentIndex < STATUS_OPTIONS.length - 1
+        ? STATUS_OPTIONS[currentIndex + 1]
+        : null,
+  };
+}
+
+function getPostItColor(status: string): {
+  bg: string;
+  text: string;
+  border: string;
+  accent: string;
+} {
+  switch (status) {
+    case "por_empezar":
+      return {
+        bg: "bg-card/95",
+        text: "text-foreground",
+        border: "border-border/80",
+        accent: "before:bg-sky-500/75",
+      };
+    case "en_curso":
+      return {
+        bg: "bg-card/95",
+        text: "text-foreground",
+        border: "border-border/80",
+        accent: "before:bg-amber-500/75",
+      };
+    case "terminado":
+      return {
+        bg: "bg-card/95",
+        text: "text-foreground",
+        border: "border-border/80",
+        accent: "before:bg-emerald-500/75",
+      };
+    default:
+      return {
+        bg: "bg-card/95",
+        text: "text-foreground",
+        border: "border-border/80",
+        accent: "before:bg-muted-foreground/45",
+      };
+  }
+}
 
 export function TaskCard({
   task,
@@ -63,12 +115,14 @@ export function TaskCard({
   className,
   assigneeInfo = null,
   onMoveTask,
+  tags = [],
 }: {
   task: Task;
   onClick: (task: Task) => void;
   className?: string;
   assigneeInfo?: AssigneeInfo | null;
   onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
+  tags?: TagInfo[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
@@ -85,6 +139,8 @@ export function TaskCard({
   };
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const currentStatus = task.status as TaskStatus;
+  const { previous, next } = getAdjacentStatuses(currentStatus);
 
   const handleDeleteClick = () => {
     setDeleteConfirmOpen(true);
@@ -95,6 +151,8 @@ export function TaskCard({
     setDeleteConfirmOpen(false);
   };
 
+  const postItColor = getPostItColor(task.status);
+
   return (
     <>
       <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
@@ -103,15 +161,19 @@ export function TaskCard({
           whileTap={!isDragging ? { scale: 0.99 } : undefined}
           transition={{ duration: 0.15 }}
         >
-          <Card
+          <div
             className={cn(
-              "cursor-pointer active:cursor-grabbing hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "relative cursor-pointer rounded-lg border p-3 pl-4 transition-all duration-200 before:absolute before:inset-y-2 before:left-1.5 before:w-0.5 before:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring/60",
+              postItColor.bg,
+              postItColor.text,
+              postItColor.border,
+              postItColor.accent,
               isDragging && "opacity-50",
               className
             )}
             tabIndex={0}
             role="button"
-            aria-label={task.title ? `Abrir ${task.title}` : "Abrir tarea"}
+            aria-label={task.title ? `Abrir ${task.title}` : "Abrir nota"}
             onClick={() => onClick(task)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -120,92 +182,155 @@ export function TaskCard({
               }
             }}
           >
-            <CardHeader className="flex flex-row items-start gap-2 py-3">
-              <CardTitle className="min-w-0 flex-1 truncate text-sm font-medium">
-                {task.title}
-              </CardTitle>
-              {assigneeInfo ? (
-                <div
-                  className="shrink-0 cursor-pointer"
-                  title={assigneeInfo.name ?? assigneeInfo._id}
-                >
-                  <Avatar className="h-6 w-6 border border-border">
-                    {assigneeInfo.image ? (
-                      <AvatarImage src={assigneeInfo.image} alt={assigneeInfo.name ?? ""} />
-                    ) : null}
-                    <AvatarFallback className="bg-muted text-muted-foreground text-[10px]">
-                      {getInitials(assigneeInfo.name)}
-                    </AvatarFallback>
-                  </Avatar>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <h3 className="min-w-0 flex-1 text-sm leading-snug font-semibold tracking-tight">
+                  {task.title}
+                </h3>
+                <div className="flex items-center gap-1 shrink-0">
+                  {assigneeInfo ? (
+                    <div
+                      className="shrink-0 cursor-pointer"
+                      title={assigneeInfo.name ?? assigneeInfo._id}
+                    >
+                      <Avatar className="h-6 w-6 border border-border/70">
+                        {assigneeInfo.image ? (
+                          <AvatarImage src={assigneeInfo.image} alt={assigneeInfo.name ?? ""} />
+                        ) : null}
+                        <AvatarFallback className="bg-muted text-foreground text-[10px] font-medium">
+                          {getInitials(assigneeInfo.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  ) : null}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 cursor-pointer text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                        onPointerDown={stopPropagation}
+                        onClick={stopPropagation}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      onClick={stopPropagation}
+                      className="cursor-pointer"
+                    >
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          stopPropagation(e);
+                          onClick(task);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      {onMoveTask ? (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="cursor-pointer">
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            Mover a
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            {STATUS_OPTIONS.map(({ value, label }) =>
+                              task.status === value ? null : (
+                                <DropdownMenuItem
+                                  key={value}
+                                  className="cursor-pointer"
+                                  onClick={(e) => {
+                                    stopPropagation(e);
+                                    onMoveTask(task._id, value);
+                                  }}
+                                >
+                                  {label}
+                                </DropdownMenuItem>
+                              )
+                            )}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      ) : null}
+                      <DropdownMenuItem
+                        variant="destructive"
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          stopPropagation(e);
+                          handleDeleteClick();
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              {task.tags && task.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 -mt-0.5">
+                  {task.tags.slice(0, 3).map((tagId) => {
+                    const tag = tags.find((t) => t._id === tagId);
+                    return tag ? (
+                      <TagBadge
+                        key={tag._id}
+                        name={tag.name}
+                        color={tag.color as ColorClass}
+                        size="sm"
+                      />
+                    ) : null;
+                  })}
+                  {task.tags.length > 3 && (
+                    <span className="text-[10px] opacity-60 px-1 py-0.5 font-medium">
+                      +{task.tags.length - 3}
+                    </span>
+                  )}
+                </div>
+              )}
+              {onMoveTask ? (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {previous ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 cursor-pointer rounded-full px-2.5 text-[11px]"
+                      onPointerDown={stopPropagation}
+                      onClick={(e) => {
+                        stopPropagation(e);
+                        onMoveTask(task._id, previous.value);
+                      }}
+                    >
+                      <ArrowLeft className="mr-1 size-3" />
+                      {previous.label}
+                    </Button>
+                  ) : null}
+                  {next ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 cursor-pointer rounded-full px-2.5 text-[11px]"
+                      onPointerDown={stopPropagation}
+                      onClick={(e) => {
+                        stopPropagation(e);
+                        onMoveTask(task._id, next.value);
+                      }}
+                    >
+                      {next.label}
+                      <ArrowRight className="ml-1 size-3" />
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0 cursor-pointer"
-                    onPointerDown={stopPropagation}
-                    onClick={stopPropagation}
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onClick={stopPropagation}>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={(e) => {
-                      stopPropagation(e);
-                      onClick(task);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    Editar
-                  </DropdownMenuItem>
-                  {onMoveTask ? (
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger className="cursor-pointer">
-                        <ArrowRight className="h-4 w-4" />
-                        Mover a
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        {MOVE_COLUMNS.map(({ status, label }) =>
-                          task.status === status ? null : (
-                            <DropdownMenuItem
-                              key={status}
-                              className="cursor-pointer"
-                              onClick={(e) => {
-                                stopPropagation(e);
-                                onMoveTask(task._id, status);
-                              }}
-                            >
-                              {label}
-                            </DropdownMenuItem>
-                          )
-                        )}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  ) : null}
-                  <DropdownMenuItem
-                    variant="destructive"
-                    className="cursor-pointer"
-                    onClick={(e) => {
-                      stopPropagation(e);
-                      handleDeleteClick();
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Eliminar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardHeader>
+            </div>
             {task.description ? (
-              <CardContent className="py-0 pb-3">
-                <p className="text-muted-foreground text-xs line-clamp-2">{task.description}</p>
-              </CardContent>
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                {task.description}
+              </p>
             ) : null}
-          </Card>
+          </div>
         </motion.div>
       </div>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

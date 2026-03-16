@@ -76,6 +76,7 @@ export const create = mutation({
     description: v.optional(v.string()),
     status: v.string(),
     assignee_id: v.optional(v.string()),
+    tags: v.optional(v.array(v.id("tags"))),
   },
   handler: async (ctx, args) => {
     if (!isValidStatus(args.status)) {
@@ -87,6 +88,21 @@ export const create = mutation({
       const participantIds = await getBoardParticipantIds(ctx, args.boardId);
       if (!participantIds.has(args.assignee_id)) {
         throw new Error("Assignee must be a board participant");
+      }
+    }
+    if (args.tags && args.tags.length > 0) {
+      if (args.tags.length > 3) {
+        throw new Error("Maximum 3 tags allowed per task");
+      }
+      const boardTags = await ctx.db
+        .query("tags")
+        .withIndex("by_board", (q) => q.eq("board_id", args.boardId))
+        .collect();
+      const boardTagIds = new Set(boardTags.map((t) => t._id));
+      for (const tagId of args.tags) {
+        if (!boardTagIds.has(tagId)) {
+          throw new Error("Invalid tag");
+        }
       }
     }
     const existing = await ctx.db
@@ -102,6 +118,7 @@ export const create = mutation({
       status: args.status,
       position,
       assignee_id: args.assignee_id && args.assignee_id !== "" ? args.assignee_id : undefined,
+      tags: args.tags && args.tags.length > 0 ? args.tags : undefined,
       created_at: now,
       updated_at: now,
     });
@@ -116,6 +133,7 @@ export const update = mutation({
     status: v.optional(v.string()),
     position: v.optional(v.number()),
     assignee_id: v.optional(v.string()),
+    tags: v.optional(v.array(v.id("tags"))),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -134,12 +152,30 @@ export const update = mutation({
         }
       }
     }
+    if (updates.tags !== undefined) {
+      if (updates.tags.length > 0) {
+        if (updates.tags.length > 3) {
+          throw new Error("Maximum 3 tags allowed per task");
+        }
+        const boardTags = await ctx.db
+          .query("tags")
+          .withIndex("by_board", (q) => q.eq("board_id", task.board_id))
+          .collect();
+        const boardTagIds = new Set(boardTags.map((t) => t._id));
+        for (const tagId of updates.tags) {
+          if (!boardTagIds.has(tagId)) {
+            throw new Error("Invalid tag");
+          }
+        }
+      }
+    }
     const patch: {
       title?: string;
       description?: string;
       status?: string;
       position?: number;
       assignee_id?: string;
+      tags?: typeof task.tags;
       updated_at: number;
     } = { updated_at: Date.now() };
     if (updates.title !== undefined) patch.title = updates.title;
@@ -149,6 +185,9 @@ export const update = mutation({
     if (updates.assignee_id !== undefined) {
       patch.assignee_id =
         updates.assignee_id && updates.assignee_id !== "" ? updates.assignee_id : undefined;
+    }
+    if (updates.tags !== undefined) {
+      patch.tags = updates.tags.length > 0 ? updates.tags : undefined;
     }
     await ctx.db.patch(id, patch);
   },

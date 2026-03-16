@@ -17,7 +17,8 @@ export const authComponent = createClient<DataModel, typeof schema>(components.b
 // Better Auth Options
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
   // Use BETTER_AUTH_BASE_URL or SITE_URL from env, or fallback to localhost for development
-  const baseURL = process.env.BETTER_AUTH_BASE_URL || process.env.SITE_URL || "http://localhost:3000";
+  const baseURL =
+    process.env.BETTER_AUTH_BASE_URL || process.env.SITE_URL || "http://localhost:3000";
 
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;

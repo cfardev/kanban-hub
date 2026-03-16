@@ -20,11 +20,18 @@ export default defineSchema({
     status: v.string(),
     position: v.number(),
     assignee_id: v.optional(v.string()),
+    tags: v.optional(v.array(v.id("tags"))),
     created_at: v.number(),
     updated_at: v.number(),
   })
     .index("by_board", ["board_id"])
     .index("by_board_status", ["board_id", "status"]),
+  tags: defineTable({
+    board_id: v.id("boards"),
+    name: v.string(),
+    color: v.string(),
+    created_at: v.number(),
+  }).index("by_board", ["board_id"]),
 
   board_members: defineTable({
     board_id: v.id("boards"),

@@ -3,20 +3,21 @@ import { PageMotion } from "@/components/page-motion";
 import { getToken } from "@/lib/auth-server";
 import { ThemeProvider } from "@/lib/theme-provider";
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 
-const fontSans = Inter({
+const fontSans = Manrope({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-const fontSerif = Inter({
+const fontSerif = Manrope({
   subsets: ["latin"],
   variable: "--font-serif",
 });
 
-const fontMono = JetBrains_Mono({
+const fontMono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   variable: "--font-mono",
 });

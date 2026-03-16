@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { SiGoogle } from "react-icons/si";
 
@@ -43,15 +44,18 @@ export default function SignInPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6">
-      <div className="bg-grid-dots absolute inset-0 pointer-events-none opacity-50" />
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10 pointer-events-none" />
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+      <div className="bg-grid-dots absolute inset-0 pointer-events-none opacity-30" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary/6 via-transparent to-accent/12" />
       <motion.div
         className="relative z-10 mb-8"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <Logo className="text-2xl" />
+        <Logo size="lg" />
       </motion.div>
       <motion.div
         className="relative z-10 w-full max-w-md"
@@ -59,15 +63,15 @@ export default function SignInPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <Card>
+        <Card className="border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardTitle>Iniciar sesion</CardTitle>
+            <CardDescription>Accede para gestionar tus tableros y tareas</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Correo</Label>
                 <Input
                   id="email"
                   type="email"
@@ -79,7 +83,7 @@ export default function SignInPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Contrasena</Label>
                 <Input
                   id="password"
                   type="password"
@@ -105,14 +109,14 @@ export default function SignInPage() {
                 )}
               </AnimatePresence>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">o continua con</span>
                 </div>
               </div>
               <Button
@@ -131,12 +135,12 @@ export default function SignInPage() {
                 Google
               </Button>
               <div className="text-center text-xs text-muted-foreground">
-                Don't have an account?{" "}
+                No tienes una cuenta?{" "}
                 <Link
                   href="/sign-up"
                   className="cursor-pointer text-primary underline-offset-4 hover:underline"
                 >
-                  Sign up
+                  Registrate
                 </Link>
               </div>
             </form>

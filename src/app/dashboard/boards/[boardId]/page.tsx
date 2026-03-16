@@ -19,6 +19,7 @@ import { useCallback } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type Task = Doc<"tasks">;
+type Tag = Doc<"tags">;
 
 export default function BoardPage() {
   const params = useParams();
@@ -26,6 +27,7 @@ export default function BoardPage() {
   const boardId = params.boardId as string;
   const board = useQuery(api.boards.getById, { id: boardId as never });
   const tasks = useQuery(api.tasks.listByBoard, { boardId: boardId as never });
+  const tags = useQuery(api.tags.listByBoard, { boardId: boardId as never });
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
   const participantIds = useQuery(api.boards.listParticipants, {
     boardId: boardId as never,
@@ -84,11 +86,16 @@ export default function BoardPage() {
     }
   }, [board, router]);
 
-  if (board === undefined || tasks === undefined || participantIds === undefined) {
+  if (
+    board === undefined ||
+    tasks === undefined ||
+    participantIds === undefined ||
+    tags === undefined
+  ) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <div className="flex items-center justify-between border-b pb-4">
+      <div className="min-h-screen p-4 md:p-6">
+        <div className="mx-auto max-w-7xl space-y-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm backdrop-blur-sm md:p-6">
+          <div className="flex items-center justify-between border-b border-border/70 pb-4">
             <div className="h-6 w-28 animate-pulse rounded bg-muted" />
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
@@ -99,7 +106,7 @@ export default function BoardPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex min-w-[280px] flex-1 flex-col rounded-lg border-t-2 border border-border bg-card p-4"
+                className="flex min-w-[280px] flex-1 flex-col rounded-lg border border-border/80 bg-background/55 p-4"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted" />
@@ -127,10 +134,10 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex items-center justify-between border-b pb-4">
-          <Logo href="/dashboard" className="text-xl" />
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="mx-auto max-w-7xl space-y-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm backdrop-blur-sm md:p-6">
+        <div className="flex items-center justify-between border-b border-border/70 pb-4">
+          <Logo href="/dashboard" size="md" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <InvitationNotifications />
@@ -145,7 +152,7 @@ export default function BoardPage() {
               </Link>
             </Button>
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-bold tracking-tight">{board.name}</h1>
+              <h1 className="truncate text-2xl font-semibold tracking-tight">{board.name}</h1>
               {board.description && (
                 <p className="truncate text-sm text-muted-foreground">{board.description}</p>
               )}
@@ -182,6 +189,7 @@ export default function BoardPage() {
           onNewTask={openNewTask}
           onMoveTask={handleMoveTask}
           participantsInfoMap={participantsInfoMap}
+          tags={tags ?? []}
         />
         <TaskDialog
           open={dialogOpen}
@@ -190,6 +198,7 @@ export default function BoardPage() {
           boardId={boardId as never}
           participantIds={participantIds}
           participantsInfo={participantsInfo}
+          availableTags={tags ?? []}
         />
       </div>
     </div>

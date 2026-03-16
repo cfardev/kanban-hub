@@ -14,6 +14,7 @@ import type * as http from "../http.js";
 import type * as invitations from "../invitations.js";
 import type * as presence from "../presence.js";
 import type * as profile from "../profile.js";
+import type * as tags from "../tags.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   invitations: typeof invitations;
   presence: typeof presence;
   profile: typeof profile;
+  tags: typeof tags;
   tasks: typeof tasks;
 }>;
 

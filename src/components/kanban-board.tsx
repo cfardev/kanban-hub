@@ -1,7 +1,6 @@
 "use client";
 
 import { KanbanColumn } from "@/components/kanban-column";
-import { TaskCardOverlay } from "@/components/task-card-overlay";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import {
@@ -19,6 +18,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useMutation } from "convex/react";
 import { motion } from "motion/react";
 import { useCallback, useState } from "react";
+import { TaskCardOverlay } from "./task-card-overlay";
 
 const columnContainerVariants = {
   hidden: { opacity: 0 },
@@ -29,6 +29,7 @@ const columnContainerVariants = {
 };
 
 type Task = Doc<"tasks">;
+type Tag = Doc<"tags">;
 
 const COLUMNS = ["por_empezar", "en_curso", "terminado"] as const;
 
@@ -41,6 +42,7 @@ export function KanbanBoard({
   onNewTask,
   onMoveTask,
   participantsInfoMap = {},
+  tags = [],
 }: {
   boardId: string;
   tasks: Task[];
@@ -48,6 +50,7 @@ export function KanbanBoard({
   onNewTask?: () => void;
   onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
   participantsInfoMap?: ParticipantsInfoMap;
+  tags?: Tag[];
 }) {
   const [activeId, setActiveId] = useState<Id<"tasks"> | null>(null);
   const [lastDroppedColumn, setLastDroppedColumn] = useState<string | null>(null);
@@ -125,6 +128,7 @@ export function KanbanBoard({
               onMoveTask={onMoveTask}
               participantsInfoMap={participantsInfoMap}
               highlightDrop={lastDroppedColumn === status}
+              tags={tags}
             />
           ))}
         </div>
@@ -142,6 +146,7 @@ export function KanbanBoard({
                   }
                 : null
             }
+            tags={tags}
           />
         ) : null}
       </DragOverlay>

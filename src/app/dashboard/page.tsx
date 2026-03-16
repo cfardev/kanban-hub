@@ -64,8 +64,8 @@ export default function DashboardPage() {
 
   if (user === undefined || user === null) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl">
+      <div className="min-h-screen p-4 md:p-6">
+        <div className="mx-auto max-w-7xl rounded-xl border border-border/70 bg-card/65 p-6 backdrop-blur-sm">
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
@@ -113,8 +113,8 @@ export default function DashboardPage() {
 
   if (boards === undefined) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl">
+      <div className="min-h-screen p-4 md:p-6">
+        <div className="mx-auto max-w-7xl rounded-xl border border-border/70 bg-card/65 p-6 backdrop-blur-sm">
           <p className="text-muted-foreground">Cargando tableros...</p>
         </div>
       </div>
@@ -122,10 +122,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex items-center justify-between border-b pb-4">
-          <Logo href="/dashboard" className="text-xl" />
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="mx-auto max-w-7xl space-y-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm backdrop-blur-sm md:p-6">
+        <div className="flex items-center justify-between border-b border-border/70 pb-4">
+          <Logo href="/dashboard" size="md" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <InvitationNotifications />
@@ -133,11 +133,14 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tableros</h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-semibold tracking-tight">Tableros</h1>
             <p className="text-muted-foreground">Gestiona tus tableros</p>
           </div>
-          <Button onClick={openCreateDialog} className="cursor-pointer">
+          <Button
+            onClick={openCreateDialog}
+            className="cursor-pointer bg-primary/90 hover:bg-primary"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nuevo tablero
           </Button>
@@ -180,7 +183,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card>
+            <Card className="border-dashed bg-background/45">
               <CardContent className="flex flex-col items-center justify-center gap-4 py-16">
                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted">
                   <LayoutGrid className="h-8 w-8 text-muted-foreground/60" />
@@ -200,7 +203,7 @@ export default function DashboardPage() {
           </motion.div>
         ) : (
           <motion.div
-            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
             variants={boardGridVariants}
             initial="hidden"
             animate="visible"
@@ -219,7 +222,7 @@ export default function DashboardPage() {
                     whileTap={{ scale: 0.99 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Card className="transition-colors hover:bg-muted/50">
+                    <Card className="h-full border-border/80 bg-background/55 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-background/80">
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
@@ -230,7 +233,7 @@ export default function DashboardPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 cursor-pointer"
+                              className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-foreground"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -243,7 +246,7 @@ export default function DashboardPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 cursor-pointer text-destructive hover:text-destructive"
+                              className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-destructive"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();

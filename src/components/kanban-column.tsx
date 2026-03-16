@@ -17,6 +17,7 @@ const columnVariants = {
 };
 
 type Task = Doc<"tasks">;
+type Tag = Doc<"tags">;
 
 const COLUMN_CONFIG: Record<
   string,
@@ -31,26 +32,26 @@ const COLUMN_CONFIG: Record<
 > = {
   por_empezar: {
     label: "Por Empezar",
-    dotClass: "bg-blue-500",
-    labelClass: "text-blue-700 dark:text-blue-400",
-    badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-    ringClass: "ring-blue-400/60",
+    dotClass: "bg-sky-500/80",
+    labelClass: "text-foreground",
+    badgeClass: "bg-sky-500/12 text-sky-700 dark:text-sky-300",
+    ringClass: "ring-sky-400/45",
     emptyText: "Arrastra o crea una tarea nueva",
   },
   en_curso: {
     label: "En Curso",
-    dotClass: "bg-amber-500",
-    labelClass: "text-amber-700 dark:text-amber-400",
-    badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    ringClass: "ring-amber-400/60",
+    dotClass: "bg-amber-500/85",
+    labelClass: "text-foreground",
+    badgeClass: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
+    ringClass: "ring-amber-400/45",
     emptyText: "Mueve tareas aquí para empezar",
   },
   terminado: {
     label: "Terminado",
-    dotClass: "bg-emerald-500",
-    labelClass: "text-emerald-700 dark:text-emerald-400",
-    badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-    ringClass: "ring-emerald-400/60",
+    dotClass: "bg-emerald-500/85",
+    labelClass: "text-foreground",
+    badgeClass: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
+    ringClass: "ring-emerald-400/45",
     emptyText: "Las tareas completadas aparecerán aquí",
   },
 };
@@ -63,6 +64,7 @@ export function KanbanColumn({
   onMoveTask,
   participantsInfoMap = {},
   highlightDrop = false,
+  tags = [],
 }: {
   status: string;
   tasks: Task[];
@@ -71,6 +73,7 @@ export function KanbanColumn({
   onMoveTask?: (taskId: Id<"tasks">, newStatus: string) => void;
   participantsInfoMap?: ParticipantsInfoMap;
   highlightDrop?: boolean;
+  tags?: Tag[];
 }) {
   const droppableId = `column-${status}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
@@ -94,15 +97,17 @@ export function KanbanColumn({
     >
       <Card
         className={cn(
-          "flex flex-1 flex-col transition-all duration-200",
+          "flex flex-1 flex-col border-border/80 bg-background/55 transition-all duration-200",
           isOver && cn("ring-2 ring-offset-2", config.ringClass),
-          highlightDrop && "ring-2 ring-emerald-500 ring-offset-2"
+          highlightDrop && "ring-2 ring-emerald-400/60 ring-offset-2"
         )}
       >
         <CardHeader className="pb-2 pt-3">
           <div className="flex items-center gap-2">
             <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", config.dotClass)} />
-            <h2 className={cn("text-sm font-semibold", config.labelClass)}>{config.label}</h2>
+            <h2 className={cn("text-sm font-semibold tracking-tight", config.labelClass)}>
+              {config.label}
+            </h2>
             <span
               className={cn(
                 "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
@@ -130,6 +135,7 @@ export function KanbanColumn({
                       }
                     : null
                 }
+                tags={tags}
               />
             ))}
           </SortableContext>

@@ -1,5 +1,6 @@
 "use client";
 
+import { TagSelector } from "@/components/tag-selector";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +33,19 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { STATUS_OPTIONS, type TaskStatus } from "@/lib/task-status";
+import { cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { useEffect, useState } from "react";
-import { LuCheck, LuPlus, LuSquareCheck, LuTrash2, LuX } from "react-icons/lu";
+import {
+  LuCheck,
+  LuCircleDashed,
+  LuClock3,
+  LuPlus,
+  LuSquareCheck,
+  LuTrash2,
+  LuX,
+} from "react-icons/lu";
 
 type Task = Doc<"tasks">;
 
@@ -62,10 +73,32 @@ type TaskDialogProps = {
   boardId: Id<"boards">;
   participantIds: string[];
   participantsInfo: ParticipantInfo[];
+  availableTags: Doc<"tags">[];
 };
 
 /** Sentinel value for "unassigned"; Radix Select disallows value="". */
 const UNASSIGNED_VALUE = "__unassigned__";
+
+const STATUS_META: Record<
+  TaskStatus,
+  { icon: typeof LuSquareCheck; description: string; className: string }
+> = {
+  por_empezar: {
+    icon: LuCircleDashed,
+    description: "Pendiente de iniciar",
+    className: "border-sky-200 bg-sky-50 text-sky-700",
+  },
+  en_curso: {
+    icon: LuClock3,
+    description: "Trabajo en progreso",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  terminado: {
+    icon: LuCheck,
+    description: "Trabajo completado",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+};
 
 export function TaskDialog({
   open,
@@ -74,10 +107,13 @@ export function TaskDialog({
   boardId,
   participantIds,
   participantsInfo,
+  availableTags,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<TaskStatus>("por_empezar");
   const [assigneeId, setAssigneeId] = useState(UNASSIGNED_VALUE);
+  const [selectedTagIds, setSelectedTagIds] = useState<Id<"tags">[]>([]);
 
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
@@ -91,11 +127,15 @@ export function TaskDialog({
       if (task) {
         setTitle(task.title);
         setDescription(task.description ?? "");
+        setStatus(task.status as TaskStatus);
         setAssigneeId(task.assignee_id ?? UNASSIGNED_VALUE);
+        setSelectedTagIds(task.tags ?? []);
       } else {
         setTitle("");
         setDescription("");
+        setStatus("por_empezar");
         setAssigneeId(UNASSIGNED_VALUE);
+        setSelectedTagIds([]);
       }
     }
   }, [open, task]);
@@ -109,16 +149,18 @@ export function TaskDialog({
         boardId,
         title: trimmedTitle,
         description: description.trim() || undefined,
-        status: "por_empezar",
+        status,
         assignee_id: assigneeId === UNASSIGNED_VALUE ? undefined : assigneeId,
+        tags: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       });
     } else {
       updateTask({
         id: task._id,
         title: trimmedTitle,
         description: description.trim() || undefined,
-        status: task.status,
+        status,
         assignee_id: assigneeId === UNASSIGNED_VALUE ? undefined : assigneeId,
+        tags: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       });
     }
     onOpenChange(false);
@@ -184,6 +226,39 @@ export function TaskDialog({
                   className="min-h-[72px] resize-none rounded-md"
                 />
               </div>
+              <div className="grid gap-2">
+                <Label className="text-xs font-medium">Estado</Label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {STATUS_OPTIONS.map(({ value, label }) => {
+                    const meta = STATUS_META[value];
+                    const Icon = meta.icon;
+                    const isSelected = status === value;
+
+                    return (
+                      <Button
+                        key={value}
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "h-auto cursor-pointer flex-col items-start gap-1.5 rounded-lg border px-3 py-3 text-left transition-colors",
+                          isSelected
+                            ? meta.className
+                            : "border-border bg-background text-foreground hover:bg-muted/60"
+                        )}
+                        onClick={() => setStatus(value)}
+                      >
+                        <span className="flex items-center gap-2 text-sm font-medium">
+                          <Icon className="size-4 shrink-0" />
+                          {label}
+                        </span>
+                        <span className="text-[11px] font-normal opacity-80">
+                          {meta.description}
+                        </span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
               {showAssignee && (
                 <div className="grid gap-2">
                   <Label className="text-xs font-medium">Asignar a</Label>
@@ -218,6 +293,16 @@ export function TaskDialog({
                   </Select>
                 </div>
               )}
+              <TagSelector
+                boardId={boardId}
+                availableTags={availableTags}
+                selectedTagIds={selectedTagIds}
+                onTagToggle={(tagId) => {
+                  setSelectedTagIds((prev) =>
+                    prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+                  );
+                }}
+              />
             </div>
             <div className="border-t border-border bg-muted/30 px-6 py-4">
               <DialogFooter className="flex-row flex-wrap gap-2 sm:justify-between">
