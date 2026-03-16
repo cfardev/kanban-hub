@@ -10,12 +10,11 @@ import { type ParticipantInfo, TaskDialog } from "@/components/task-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { useAction, useMutation, useQuery } from "convex/react";
+import type { Doc } from "@/convex/_generated/dataModel";
+import { useAction, useQuery } from "convex/react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type Task = Doc<"tasks">;
@@ -28,7 +27,6 @@ export default function BoardPage() {
   const board = useQuery(api.boards.getById, { id: boardId as never });
   const tasks = useQuery(api.tasks.listByBoard, { boardId: boardId as never });
   const tags = useQuery(api.tags.listByBoard, { boardId: boardId as never });
-  const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
   const participantIds = useQuery(api.boards.listParticipants, {
     boardId: boardId as never,
   });
@@ -68,17 +66,6 @@ export default function BoardPage() {
     setSelectedTask(task);
     setDialogOpen(true);
   };
-
-  const handleMoveTask = useCallback(
-    (taskId: Id<"tasks">, newStatus: string) => {
-      if (tasks === undefined) return;
-      const tasksInColumn = tasks.filter((t) => t.status === newStatus);
-      const newPosition =
-        tasksInColumn.length === 0 ? 0 : Math.max(...tasksInColumn.map((t) => t.position)) + 1;
-      updateStatusAndPosition({ id: taskId, status: newStatus, position: newPosition });
-    },
-    [tasks, updateStatusAndPosition]
-  );
 
   useEffect(() => {
     if (board === null) {
@@ -187,7 +174,6 @@ export default function BoardPage() {
           tasks={tasks}
           onTaskClick={openTask}
           onNewTask={openNewTask}
-          onMoveTask={handleMoveTask}
           participantsInfoMap={participantsInfoMap}
           tags={tags ?? []}
         />
