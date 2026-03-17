@@ -6,15 +6,15 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import {
   DndContext,
+  type DragEndEvent,
   DragOverlay,
+  type DragStartEvent,
+  type Modifier,
   PointerSensor,
   TouchSensor,
   closestCorners,
   useSensor,
   useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-  type Modifier,
 } from "@dnd-kit/core";
 import { useMutation } from "convex/react";
 import { motion } from "motion/react";
@@ -148,10 +148,10 @@ export function KanbanBoard({
 
   const activeAssignee = activeTask?.assignee_id
     ? {
-      _id: activeTask.assignee_id,
-      name: participantsInfoMap[activeTask.assignee_id]?.name ?? null,
-      image: participantsInfoMap[activeTask.assignee_id]?.image ?? null,
-    }
+        _id: activeTask.assignee_id,
+        name: participantsInfoMap[activeTask.assignee_id]?.name ?? null,
+        image: participantsInfoMap[activeTask.assignee_id]?.image ?? null,
+      }
     : null;
 
   return (
@@ -174,7 +174,7 @@ export function KanbanBoard({
               key={status}
               status={status}
               tasks={tasksByStatus[status]}
-              onTaskClick={onTaskClick ?? (() => { })}
+              onTaskClick={onTaskClick ?? (() => {})}
               onNewTask={status === "por_empezar" ? onNewTask : undefined}
               participantsInfoMap={participantsInfoMap}
               activeTaskId={activeTask?._id ?? null}
@@ -185,11 +185,7 @@ export function KanbanBoard({
       </motion.div>
       <DragOverlay>
         {activeTask ? (
-          <TaskCardOverlay
-            task={activeTask}
-            assigneeInfo={activeAssignee}
-            tags={tags}
-          />
+          <TaskCardOverlay task={activeTask} assigneeInfo={activeAssignee} tags={tags} />
         ) : null}
       </DragOverlay>
     </DndContext>

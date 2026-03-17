@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation } from "convex/react";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MessageSquare, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 
@@ -99,6 +99,7 @@ export function TaskCard({
   assigneeInfo = null,
   isDragging = false,
   tags = [],
+  commentsCount = 0,
 }: {
   task: Task;
   onClick: (task: Task) => void;
@@ -106,12 +107,19 @@ export function TaskCard({
   assigneeInfo?: AssigneeInfo | null;
   isDragging?: boolean;
   tags?: TagInfo[];
+  commentsCount?: number;
 }) {
   const removeTask = useMutation(api.tasks.remove);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } =
-    useSortable({ id: task._id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: task._id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -162,7 +170,18 @@ export function TaskCard({
                 <h3 className="min-w-0 flex-1 text-sm leading-snug font-semibold tracking-tight">
                   {task.title}
                 </h3>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {commentsCount > 0 && (
+                    <div
+                      className="flex items-center gap-1 rounded-full bg-muted/80 px-2 py-0.5"
+                      title={`${commentsCount} comentario${commentsCount !== 1 ? "s" : ""}`}
+                    >
+                      <MessageSquare className="size-3 text-muted-foreground" />
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {commentsCount}
+                      </span>
+                    </div>
+                  )}
                   {assigneeInfo ? (
                     <div
                       className="shrink-0 cursor-pointer"

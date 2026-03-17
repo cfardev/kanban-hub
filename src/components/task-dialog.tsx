@@ -1,5 +1,6 @@
 "use client";
 
+import { SubtaskList } from "@/components/subtask/subtask-list";
 import { TagSelector } from "@/components/tag-selector";
 import {
   AlertDialog,
@@ -35,7 +36,7 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { STATUS_OPTIONS, type TaskStatus } from "@/lib/task-status";
 import { cn } from "@/lib/utils";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import {
   LuCheck,
@@ -118,6 +119,7 @@ export function TaskDialog({
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
   const removeTask = useMutation(api.tasks.remove);
+  const subtasks = useQuery(api.subtasks.listByTask, task ? { boardId, taskId: task._id } : "skip");
 
   const isCreate = task === null;
   const showAssignee = participantIds.length > 1;
@@ -268,6 +270,11 @@ export function TaskDialog({
                   );
                 }}
               />
+              {!isCreate && task && subtasks && (
+                <div className="border-t border-border pt-4">
+                  <SubtaskList boardId={boardId} taskId={task._id} subtasks={subtasks} />
+                </div>
+              )}
             </div>
             <div className="border-t border-border bg-muted/30 px-6 py-4">
               <DialogFooter className="flex-row flex-wrap gap-2 sm:justify-between">

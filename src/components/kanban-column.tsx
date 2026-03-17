@@ -110,10 +110,7 @@ export function KanbanColumn({
             </span>
           </div>
         </CardHeader>
-        <CardContent
-          ref={setNodeRef}
-          className="flex flex-1 flex-col gap-2 overflow-auto pb-4"
-        >
+        <CardContent ref={setNodeRef} className="flex flex-1 flex-col gap-2 overflow-auto pb-4">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.map((task) => (
               <TaskCard
@@ -124,10 +121,10 @@ export function KanbanColumn({
                 assigneeInfo={
                   task.assignee_id
                     ? {
-                      _id: task.assignee_id,
-                      name: participantsInfoMap[task.assignee_id]?.name ?? null,
-                      image: participantsInfoMap[task.assignee_id]?.image ?? null,
-                    }
+                        _id: task.assignee_id,
+                        name: participantsInfoMap[task.assignee_id]?.name ?? null,
+                        image: participantsInfoMap[task.assignee_id]?.image ?? null,
+                      }
                     : null
                 }
                 tags={tags}

@@ -56,6 +56,37 @@ export default defineSchema({
     .index("by_board", ["board_id"])
     .index("by_board_invitee", ["board_id", "invitee_id"]),
 
+  subtasks: defineTable({
+    task_id: v.id("tasks"),
+    title: v.string(),
+    completed: v.boolean(),
+    position: v.number(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_task", ["task_id"]),
+
+  comments: defineTable({
+    task_id: v.id("tasks"),
+    author_id: v.string(),
+    content: v.string(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  })
+    .index("by_task", ["task_id"])
+    .index("by_task_created", ["task_id", "created_at"]),
+
+  activity_logs: defineTable({
+    board_id: v.id("boards"),
+    task_id: v.optional(v.id("tasks")),
+    user_id: v.string(),
+    action: v.string(),
+    details: v.optional(v.string()),
+    created_at: v.number(),
+  })
+    .index("by_board", ["board_id"])
+    .index("by_board_created", ["board_id", "created_at"])
+    .index("by_task", ["task_id"]),
+
   // Better Auth tables are managed by the betterAuth component
   // and should not be added here to avoid duplication
 });

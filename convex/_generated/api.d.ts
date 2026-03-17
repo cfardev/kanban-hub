@@ -8,12 +8,15 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
 import type * as auth from "../auth.js";
 import type * as boards from "../boards.js";
+import type * as comments from "../comments.js";
 import type * as http from "../http.js";
 import type * as invitations from "../invitations.js";
 import type * as presence from "../presence.js";
 import type * as profile from "../profile.js";
+import type * as subtasks from "../subtasks.js";
 import type * as tags from "../tags.js";
 import type * as tasks from "../tasks.js";
 
@@ -24,12 +27,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
   auth: typeof auth;
   boards: typeof boards;
+  comments: typeof comments;
   http: typeof http;
   invitations: typeof invitations;
   presence: typeof presence;
   profile: typeof profile;
+  subtasks: typeof subtasks;
   tags: typeof tags;
   tasks: typeof tasks;
 }>;

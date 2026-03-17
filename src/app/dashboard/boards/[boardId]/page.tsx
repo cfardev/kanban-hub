@@ -1,5 +1,6 @@
 "use client";
 
+import { ActivityDialog } from "@/components/activity/activity-dialog";
 import { AvatarDropdown } from "@/components/avatar-dropdown";
 import { BoardPresenceAvatars } from "@/components/board-presence-avatars";
 import { InvitationNotifications } from "@/components/invitation-notifications";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
+import { Clock } from "lucide-react";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -35,6 +37,7 @@ export default function BoardPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
 
@@ -128,6 +131,15 @@ export default function BoardPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <InvitationNotifications />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 cursor-pointer"
+              onClick={() => setActivityDialogOpen(true)}
+              title="Ver historial de actividad"
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
             <AvatarDropdown />
           </div>
         </div>
@@ -144,17 +156,28 @@ export default function BoardPage() {
                 <p className="truncate text-sm text-muted-foreground">{board.description}</p>
               )}
             </div>
-            {isOwner && (
+            <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                size="sm"
-                className="ml-1 shrink-0 cursor-pointer"
-                onClick={() => setShareDialogOpen(true)}
+                variant="ghost"
+                size="icon"
+                className="shrink-0 cursor-pointer"
+                onClick={() => setActivityDialogOpen(true)}
+                title="Ver historial de actividad"
               >
-                <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                Compartir
+                <Clock className="h-4 w-4" />
               </Button>
-            )}
+              {isOwner && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 cursor-pointer"
+                  onClick={() => setShareDialogOpen(true)}
+                >
+                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                  Compartir
+                </Button>
+              )}
+            </div>
           </div>
           {currentUser && (currentUser as { subject?: string }).subject && (
             <BoardPresenceAvatars
@@ -185,6 +208,12 @@ export default function BoardPage() {
           participantIds={participantIds}
           participantsInfo={participantsInfo}
           availableTags={tags ?? []}
+        />
+        <ActivityDialog
+          open={activityDialogOpen}
+          onOpenChange={setActivityDialogOpen}
+          boardId={boardId as never}
+          participantsInfo={participantsInfoMap}
         />
       </div>
     </div>

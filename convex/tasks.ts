@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
@@ -109,7 +110,7 @@ export const create = mutation({
       .collect();
     const position = existing.length === 0 ? 0 : Math.max(...existing.map((t) => t.position)) + 1;
     const now = Date.now();
-    return await ctx.db.insert("tasks", {
+    const taskId = await ctx.db.insert("tasks", {
       board_id: args.boardId,
       title: args.title,
       description: args.description,
@@ -120,6 +121,13 @@ export const create = mutation({
       created_at: now,
       updated_at: now,
     });
+    await ctx.runMutation(api.activity.logTaskCreated, {
+      boardId: args.boardId,
+      taskId,
+      userId: identity.subject,
+      title: args.title,
+    });
+    return taskId;
   },
 });
 
@@ -176,18 +184,41 @@ export const update = mutation({
       tags?: typeof task.tags;
       updated_at: number;
     } = { updated_at: Date.now() };
-    if (updates.title !== undefined) patch.title = updates.title;
-    if (updates.description !== undefined) patch.description = updates.description;
-    if (updates.status !== undefined) patch.status = updates.status;
-    if (updates.position !== undefined) patch.position = updates.position;
+    const changedFields: string[] = [];
+    if (updates.title !== undefined) {
+      patch.title = updates.title;
+      changedFields.push("title");
+    }
+    if (updates.description !== undefined) {
+      patch.description = updates.description;
+      changedFields.push("description");
+    }
+    if (updates.status !== undefined) {
+      patch.status = updates.status;
+      changedFields.push("status");
+    }
+    if (updates.position !== undefined) {
+      patch.position = updates.position;
+      changedFields.push("position");
+    }
     if (updates.assignee_id !== undefined) {
       patch.assignee_id =
         updates.assignee_id && updates.assignee_id !== "" ? updates.assignee_id : undefined;
+      changedFields.push("assignee");
     }
     if (updates.tags !== undefined) {
       patch.tags = updates.tags.length > 0 ? updates.tags : undefined;
+      changedFields.push("tags");
     }
     await ctx.db.patch(id, patch);
+    if (changedFields.length > 0) {
+      await ctx.runMutation(api.activity.logTaskUpdated, {
+        boardId: task.board_id,
+        taskId: id,
+        userId: identity.subject,
+        changes: JSON.stringify({ fields: changedFields }),
+      });
+    }
   },
 });
 
@@ -205,11 +236,21 @@ export const updateStatusAndPosition = mutation({
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
     await assertBoardAccess(ctx, task.board_id, identity.subject);
+    const fromStatus = task.status;
     await ctx.db.patch(args.id, {
       status: args.status,
       position: args.position,
       updated_at: Date.now(),
     });
+    if (fromStatus !== args.status) {
+      await ctx.runMutation(api.activity.logTaskMoved, {
+        boardId: task.board_id,
+        taskId: args.id,
+        userId: identity.subject,
+        fromStatus,
+        toStatus: args.status,
+      });
+    }
   },
 });
 
@@ -220,7 +261,16 @@ export const remove = mutation({
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
     await assertBoardAccess(ctx, task.board_id, identity.subject);
+    const taskId = args.id;
+    const taskTitle = task.title;
+    const boardId = task.board_id;
     await ctx.db.delete(args.id);
+    await ctx.runMutation(api.activity.logTaskDeleted, {
+      boardId,
+      taskId,
+      userId: identity.subject,
+      title: taskTitle,
+    });
   },
 });
 
