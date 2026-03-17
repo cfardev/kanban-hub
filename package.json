@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "test": "vitest",
+    "test:run": "vitest --run",
+    "test:watch": "vitest --watch",
     "build": "next build",
     "lint": "biome check --write .",
     "type-check": "tsc --noEmit",

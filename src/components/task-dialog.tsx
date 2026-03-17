@@ -223,7 +223,7 @@ export function TaskDialog({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descripción (opcional)"
                   rows={3}
-                  className="min-h-[72px] resize-none rounded-md"
+                  className="min-h-18 resize-none rounded-md"
                 />
               </div>
               {showAssignee && (
