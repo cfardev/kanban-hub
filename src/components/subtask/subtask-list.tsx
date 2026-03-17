@@ -38,6 +38,7 @@ type SubtaskListProps = {
 };
 
 export function SubtaskList({ boardId, taskId, subtasks }: SubtaskListProps) {
+  const createSubtask = useMutation(api.subtasks.create);
   const updateSubtask = useMutation(api.subtasks.update);
   const removeSubtask = useMutation(api.subtasks.remove);
   const updateSubtaskPositions = useMutation(api.subtasks.updatePositions);
@@ -87,7 +88,6 @@ export function SubtaskList({ boardId, taskId, subtasks }: SubtaskListProps) {
   };
 
   const handleAdd = async (title: string) => {
-    const createSubtask = useMutation(api.subtasks.create);
     await createSubtask({
       boardId,
       taskId,

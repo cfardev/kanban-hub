@@ -81,6 +81,7 @@ export function SubtaskItem({
       )}
     >
       <button
+        type="button"
         className="cursor-grab text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:outline-none focus:opacity-100"
         {...attributes}
         {...listeners}
@@ -132,6 +133,7 @@ export function SubtaskItem({
       )}
 
       <motion.button
+        type="button"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         className="cursor-pointer text-muted-foreground/50 opacity-0 transition-all hover:text-destructive focus:outline-none group-hover:opacity-100"

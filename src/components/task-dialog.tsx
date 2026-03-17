@@ -14,14 +14,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,6 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -181,24 +181,24 @@ export function TaskDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md rounded-xl p-0 gap-0 overflow-hidden">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full p-0 gap-0 overflow-hidden sm:max-w-xl">
           <form onSubmit={handleSubmit}>
-            <DialogHeader className="px-6 pt-6 pb-2 space-y-1">
+            <SheetHeader className="px-6 pt-6 pb-2 space-y-1">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <LuSquareCheck className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <DialogTitle className="text-base font-semibold tracking-tight">
+                  <SheetTitle className="text-base font-semibold tracking-tight">
                     {isCreate ? "Nueva tarea" : "Editar tarea"}
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground">
+                  </SheetTitle>
+                  <SheetDescription className="text-xs text-muted-foreground">
                     {isCreate ? "Añade los datos de la tarea." : "Modifica los datos de la tarea."}
-                  </DialogDescription>
+                  </SheetDescription>
                 </div>
               </div>
-            </DialogHeader>
+            </SheetHeader>
             <div className="grid gap-5 px-6 py-5">
               <div className="grid gap-2">
                 <Label htmlFor="task-title" className="text-xs font-medium">
@@ -277,7 +277,7 @@ export function TaskDialog({
               )}
             </div>
             <div className="border-t border-border bg-muted/30 px-6 py-4">
-              <DialogFooter className="flex-row flex-wrap gap-2 sm:justify-between">
+              <SheetFooter className="flex-row flex-wrap gap-2 sm:justify-between">
                 {!isCreate ? (
                   <Button
                     type="button"
@@ -315,11 +315,11 @@ export function TaskDialog({
                     )}
                   </Button>
                 </div>
-              </DialogFooter>
+              </SheetFooter>
             </div>
           </form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

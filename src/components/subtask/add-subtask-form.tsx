@@ -15,8 +15,7 @@ export function AddSubtaskForm({ onAdd, disabled, isAtLimit }: AddSubtaskFormPro
   const [value, setValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const trimmed = value.trim();
     if (trimmed && !disabled && !isAtLimit) {
       onAdd(trimmed);
@@ -26,6 +25,12 @@ export function AddSubtaskForm({ onAdd, disabled, isAtLimit }: AddSubtaskFormPro
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+      return;
+    }
+
     if (e.key === "Escape") {
       setValue("");
       setIsFocused(false);
@@ -54,7 +59,7 @@ export function AddSubtaskForm({ onAdd, disabled, isAtLimit }: AddSubtaskFormPro
           type="button"
           disabled={disabled}
           className="ml-3 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40 text-muted-foreground/40 transition-colors hover:border-emerald-600 hover:text-emerald-600 disabled:cursor-not-allowed"
-          onClick={() => document.getElementById("subtask-input")?.focus()}
+          onClick={handleSubmit}
         >
           <LuPlus className="size-3" />
         </button>
