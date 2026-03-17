@@ -111,7 +111,7 @@ export function TaskDialog({
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<TaskStatus>("por_empezar");
+  const [status, setStatus] = useState<TaskStatus | undefined>(undefined);
   const [assigneeId, setAssigneeId] = useState(UNASSIGNED_VALUE);
   const [selectedTagIds, setSelectedTagIds] = useState<Id<"tags">[]>([]);
 
@@ -133,7 +133,7 @@ export function TaskDialog({
       } else {
         setTitle("");
         setDescription("");
-        setStatus("por_empezar");
+        setStatus(undefined);
         setAssigneeId(UNASSIGNED_VALUE);
         setSelectedTagIds([]);
       }
@@ -149,7 +149,6 @@ export function TaskDialog({
         boardId,
         title: trimmedTitle,
         description: description.trim() || undefined,
-        status,
         assignee_id: assigneeId === UNASSIGNED_VALUE ? undefined : assigneeId,
         tags: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       });
@@ -158,7 +157,6 @@ export function TaskDialog({
         id: task._id,
         title: trimmedTitle,
         description: description.trim() || undefined,
-        status,
         assignee_id: assigneeId === UNASSIGNED_VALUE ? undefined : assigneeId,
         tags: selectedTagIds.length > 0 ? selectedTagIds : undefined,
       });
@@ -225,39 +223,6 @@ export function TaskDialog({
                   rows={3}
                   className="min-h-[72px] resize-none rounded-md"
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label className="text-xs font-medium">Estado</Label>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {STATUS_OPTIONS.map(({ value, label }) => {
-                    const meta = STATUS_META[value];
-                    const Icon = meta.icon;
-                    const isSelected = status === value;
-
-                    return (
-                      <Button
-                        key={value}
-                        type="button"
-                        variant="outline"
-                        className={cn(
-                          "h-auto cursor-pointer flex-col items-start gap-1.5 rounded-lg border px-3 py-3 text-left transition-colors",
-                          isSelected
-                            ? meta.className
-                            : "border-border bg-background text-foreground hover:bg-muted/60"
-                        )}
-                        onClick={() => setStatus(value)}
-                      >
-                        <span className="flex items-center gap-2 text-sm font-medium">
-                          <Icon className="size-4 shrink-0" />
-                          {label}
-                        </span>
-                        <span className="text-[11px] font-normal opacity-80">
-                          {meta.description}
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
               </div>
               {showAssignee && (
                 <div className="grid gap-2">

@@ -74,14 +74,11 @@ export const create = mutation({
     boardId: v.id("boards"),
     title: v.string(),
     description: v.optional(v.string()),
-    status: v.string(),
+    status: v.optional(v.string()),
     assignee_id: v.optional(v.string()),
     tags: v.optional(v.array(v.id("tags"))),
   },
   handler: async (ctx, args) => {
-    if (!isValidStatus(args.status)) {
-      throw new Error("Invalid status");
-    }
     const identity = await requireIdentity(ctx);
     await assertBoardAccess(ctx, args.boardId, identity.subject);
     if (args.assignee_id !== undefined && args.assignee_id !== "") {
@@ -105,9 +102,10 @@ export const create = mutation({
         }
       }
     }
+    const status = args.status ?? "por_empezar";
     const existing = await ctx.db
       .query("tasks")
-      .withIndex("by_board_status", (q) => q.eq("board_id", args.boardId).eq("status", args.status))
+      .withIndex("by_board_status", (q) => q.eq("board_id", args.boardId).eq("status", status))
       .collect();
     const position = existing.length === 0 ? 0 : Math.max(...existing.map((t) => t.position)) + 1;
     const now = Date.now();
@@ -115,7 +113,7 @@ export const create = mutation({
       board_id: args.boardId,
       title: args.title,
       description: args.description,
-      status: args.status,
+      status,
       position,
       assignee_id: args.assignee_id && args.assignee_id !== "" ? args.assignee_id : undefined,
       tags: args.tags && args.tags.length > 0 ? args.tags : undefined,
