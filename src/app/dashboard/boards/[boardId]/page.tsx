@@ -131,15 +131,6 @@ export default function BoardPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <InvitationNotifications />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 cursor-pointer"
-              onClick={() => setActivityDialogOpen(true)}
-              title="Ver historial de actividad"
-            >
-              <Clock className="h-4 w-4" />
-            </Button>
             <AvatarDropdown />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { KanbanBoard } from "./kanban-board";
@@ -60,7 +60,7 @@ describe("KanbanBoard", () => {
     useMutationMock.mockReturnValue(updateStatusAndPositionMock);
   });
 
-  it("updates status and position when dropped on column", () => {
+  it("updates status and position when dropped on column", async () => {
     render(
       <KanbanBoard
         boardId="board-1"
@@ -83,10 +83,12 @@ describe("KanbanBoard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "trigger-drag-end" }));
 
-    expect(updateStatusAndPositionMock).toHaveBeenCalledWith({
-      id: "task-1",
-      status: "en_curso",
-      position: 3,
+    await waitFor(() => {
+      expect(updateStatusAndPositionMock).toHaveBeenCalledWith({
+        id: "task-1",
+        status: "en_curso",
+        position: 3,
+      });
     });
   });
 });
