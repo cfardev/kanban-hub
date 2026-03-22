@@ -1,13 +1,23 @@
 "use client";
 
 import { type ColorClass, TagBadge } from "@/components/tag-badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useState } from "react";
-import { LuCheck, LuPlus, LuSearch } from "react-icons/lu";
+import { LuCheck, LuPlus, LuSearch, LuTrash2 } from "react-icons/lu";
 
 const AVAILABLE_COLORS: ColorClass[] = [
   "red",
@@ -40,14 +50,16 @@ export function TagSelector({
   const [newTagColor, setNewTagColor] = useState<ColorClass>("blue");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tagToDelete, setTagToDelete] = useState<Doc<"tags"> | null>(null);
   const createTag = useMutation(api.tags.create);
+  const removeTag = useMutation(api.tags.remove);
 
   const canAddMore = selectedTagIds.length < maxTags;
   const query = searchQuery.trim().toLowerCase();
 
-  const selectableTags = availableTags.filter((tag) => !selectedTagIds.includes(tag._id));
-  const filteredTags = selectableTags.filter((tag) => tag.name.toLowerCase().includes(query));
+  const filteredTags = availableTags.filter((tag) => tag.name.toLowerCase().includes(query));
 
   const exactTagMatch = availableTags.find((tag) => tag.name.toLowerCase() === query);
   const canCreateFromQuery = query.length > 0 && !exactTagMatch && canAddMore;
@@ -82,6 +94,23 @@ export function TagSelector({
     }
     if (canCreateFromQuery) {
       await handleCreateTag();
+    }
+  };
+
+  const handleDeleteTagConfirm = async () => {
+    if (!tagToDelete) return;
+    setError(null);
+    setIsDeleting(true);
+    try {
+      if (selectedTagIds.includes(tagToDelete._id)) {
+        onTagToggle(tagToDelete._id);
+      }
+      await removeTag({ id: tagToDelete._id });
+      setTagToDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo eliminar la etiqueta");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -136,26 +165,39 @@ export function TagSelector({
 
         {filteredTags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {filteredTags.map((tag) => (
-              <button
-                key={tag._id}
-                type="button"
-                onClick={() => {
-                  if (!canAddMore) return;
-                  onTagToggle(tag._id);
-                  setSearchQuery("");
-                }}
-                className="cursor-pointer"
-                disabled={!canAddMore}
-              >
-                <TagBadge
-                  name={tag.name}
-                  color={tag.color as ColorClass}
-                  size="md"
-                  className="hover:brightness-95"
-                />
-              </button>
-            ))}
+            {filteredTags.map((tag) => {
+              const isSelected = selectedTagIds.includes(tag._id);
+              return (
+                <div key={tag._id} className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isSelected && !canAddMore) return;
+                      onTagToggle(tag._id);
+                      setSearchQuery("");
+                    }}
+                    className="cursor-pointer"
+                    disabled={!isSelected && !canAddMore}
+                  >
+                    <TagBadge
+                      name={tag.name}
+                      color={tag.color as ColorClass}
+                      size="md"
+                      className="hover:brightness-95"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTagToDelete(tag)}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-destructive cursor-pointer"
+                    aria-label={`Eliminar etiqueta ${tag.name}`}
+                    disabled={isDeleting}
+                  >
+                    <LuTrash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
@@ -205,6 +247,32 @@ export function TagSelector({
           Alcanzaste el maximo de {maxTags} etiquetas. Quita una para agregar otra.
         </p>
       )}
+
+      <AlertDialog
+        open={tagToDelete !== null}
+        onOpenChange={(open) => !open && setTagToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar etiqueta</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Se eliminara "${tagToDelete?.name ?? ""}" del tablero y de todas las tareas.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer" disabled={isDeleting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleDeleteTagConfirm()}
+              className="cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/20"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
