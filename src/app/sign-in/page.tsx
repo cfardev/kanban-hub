@@ -13,6 +13,10 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { SiGoogle } from "react-icons/si";
 
+const AUTH_ERROR_TRANSLATIONS: Record<string, string> = {
+  "Invalid email or password": "Correo o contrasena incorrectos",
+};
+
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -34,7 +38,12 @@ export default function SignInPage() {
     });
 
     if (authError) {
-      setError(authError.message ?? "Failed to sign in");
+      const translatedError =
+        authError.message != null
+          ? (AUTH_ERROR_TRANSLATIONS[authError.message] ?? authError.message)
+          : "No se pudo iniciar sesion";
+
+      setError(translatedError);
       setIsLoading(false);
       return;
     }

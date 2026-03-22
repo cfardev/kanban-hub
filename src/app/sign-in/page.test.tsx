@@ -39,7 +39,7 @@ describe("SignInPage", () => {
   });
 
   it("submits credentials with default callback", async () => {
-    signInEmailMock.mockResolvedValueOnce({ error: { message: "Bad auth" } });
+    signInEmailMock.mockResolvedValueOnce({ error: { message: "Credenciales incorrectas" } });
 
     render(<SignInPage />);
 
@@ -57,14 +57,14 @@ describe("SignInPage", () => {
   });
 
   it("shows auth error on failed login", async () => {
-    signInEmailMock.mockResolvedValueOnce({ error: { message: "Credenciales invalidas" } });
+    signInEmailMock.mockResolvedValueOnce({ error: { message: "Invalid email or password" } });
     render(<SignInPage />);
 
     fireEvent.change(screen.getByLabelText("Correo"), { target: { value: "bad@mail.com" } });
     fireEvent.change(screen.getByLabelText("Contrasena"), { target: { value: "bad-pass" } });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
-    expect(await screen.findByText("Credenciales invalidas")).toBeInTheDocument();
+    expect(await screen.findByText("Correo o contrasena incorrectos")).toBeInTheDocument();
   });
 
   it("starts social sign-in with callback query param", async () => {

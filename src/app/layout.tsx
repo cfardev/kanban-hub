@@ -1,5 +1,4 @@
 import { ConvexClientProvider } from "@/components/convex-client-provider";
-import { PageMotion } from "@/components/page-motion";
 import { getToken } from "@/lib/auth-server";
 import { ThemeProvider } from "@/lib/theme-provider";
 import type { Metadata } from "next";
@@ -41,7 +40,7 @@ export default async function RootLayout({
       >
         <ThemeProvider>
           <ConvexClientProvider initialToken={token}>
-            <PageMotion>{children}</PageMotion>
+            {children}
           </ConvexClientProvider>
         </ThemeProvider>
       </body>

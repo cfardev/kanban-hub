@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/core";
 import { useMutation } from "convex/react";
 import { motion } from "motion/react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const columnContainerVariants = {
   hidden: { opacity: 0 },
@@ -66,7 +66,24 @@ export function KanbanBoard({
   tags?: Tag[];
 }) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [pendingMoves, setPendingMoves] = useState<
+    Partial<Record<Id<"tasks">, { status: (typeof COLUMNS)[number]; position: number }>>
+  >({});
   const updateStatusAndPosition = useMutation(api.tasks.updateStatusAndPosition);
+
+  const visibleTasks = useMemo(
+    () =>
+      tasks.map((task) => {
+        const pending = pendingMoves[task._id];
+        if (!pending) return task;
+        return {
+          ...task,
+          status: pending.status,
+          position: pending.position,
+        };
+      }),
+    [tasks, pendingMoves]
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -75,10 +92,10 @@ export function KanbanBoard({
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      const task = tasks.find((t) => t._id === event.active.id);
+      const task = visibleTasks.find((t) => t._id === event.active.id);
       setActiveTask(task ?? null);
     },
-    [tasks]
+    [visibleTasks]
   );
 
   const handleDragEnd = useCallback(
@@ -93,11 +110,13 @@ export function KanbanBoard({
       // Determine target column and position
       const targetStatus = COLUMNS.includes(overId as (typeof COLUMNS)[number])
         ? (overId as (typeof COLUMNS)[number])
-        : (tasks.find((t) => t._id === overId)?.status as (typeof COLUMNS)[number] | undefined);
+        : (visibleTasks.find((t) => t._id === overId)?.status as
+            | (typeof COLUMNS)[number]
+            | undefined);
 
       if (!targetStatus) return;
 
-      const tasksInTarget = tasks
+      const tasksInTarget = visibleTasks
         .filter((t) => t.status === targetStatus && t._id !== taskId)
         .sort((a, b) => a.position - b.position);
 
@@ -124,21 +143,41 @@ export function KanbanBoard({
         }
       }
 
-      const currentTask = tasks.find((t) => t._id === taskId);
+      const currentTask = visibleTasks.find((t) => t._id === taskId);
       if (
         currentTask?.status === targetStatus &&
         Math.abs((currentTask?.position ?? 0) - newPosition) < 0.0001
       )
         return;
 
-      updateStatusAndPosition({ id: taskId, status: targetStatus, position: newPosition });
+      setPendingMoves((prev) => ({
+        ...prev,
+        [taskId]: {
+          status: targetStatus,
+          position: newPosition,
+        },
+      }));
+
+      Promise.resolve(
+        updateStatusAndPosition({
+          id: taskId,
+          status: targetStatus,
+          position: newPosition,
+        })
+      ).finally(() => {
+        setPendingMoves((prev) => {
+          const next = { ...prev };
+          delete next[taskId];
+          return next;
+        });
+      });
     },
-    [tasks, updateStatusAndPosition]
+    [visibleTasks, updateStatusAndPosition]
   );
 
   const tasksByStatus = COLUMNS.reduce(
     (acc, status) => {
-      acc[status] = tasks
+      acc[status] = visibleTasks
         .filter((t) => t.status === status)
         .sort((a, b) => a.position - b.position);
       return acc;
