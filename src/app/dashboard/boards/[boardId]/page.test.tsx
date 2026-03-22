@@ -138,10 +138,10 @@ describe("BoardPage", () => {
     });
   });
 
-  it("shows owner share button and opens task dialog", async () => {
+  it("shows participants button and opens task dialog", async () => {
     render(<BoardPage />);
 
-    expect(await screen.findByRole("button", { name: "Compartir" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Participantes" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nuevo task" }));
     expect(screen.getByText("TaskDialogOpen")).toBeInTheDocument();

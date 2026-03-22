@@ -14,7 +14,7 @@ import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
 import { Clock } from "lucide-react";
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -42,7 +42,7 @@ export default function BoardPage() {
   const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
 
   useEffect(() => {
-    if (participantIds !== undefined && participantIds.length > 1) {
+    if (participantIds !== undefined && participantIds.length > 0) {
       getUsersPublicInfo({ userIds: participantIds }).then(setParticipantsInfo);
     } else {
       setParticipantsInfo([]);
@@ -166,17 +166,15 @@ export default function BoardPage() {
               >
                 <Clock className="h-4 w-4" />
               </Button>
-              {isOwner && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 cursor-pointer"
-                  onClick={() => setShareDialogOpen(true)}
-                >
-                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                  Compartir
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 cursor-pointer"
+                onClick={() => setShareDialogOpen(true)}
+              >
+                <Users className="h-3.5 w-3.5 mr-1.5" />
+                Participantes
+              </Button>
             </div>
           </div>
           {currentUser && (currentUser as { subject?: string }).subject && (
@@ -191,6 +189,11 @@ export default function BoardPage() {
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
           boardId={boardId as never}
+          isOwner={isOwner}
+          ownerId={board.owner_id ?? ""}
+          currentUserId={(currentUser as { subject?: string })?.subject ?? ""}
+          participants={participantsInfo}
+          onLeaveBoard={() => router.replace("/dashboard")}
         />
         <KanbanBoard
           boardId={boardId}

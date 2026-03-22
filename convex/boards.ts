@@ -155,3 +155,82 @@ export const remove = mutation({
     });
   },
 });
+
+export const removeParticipant = mutation({
+  args: {
+    boardId: v.id("boards"),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const board = await getBoardOrThrow(ctx, args.boardId, identity.subject);
+    if (board.owner_id === args.userId) {
+      throw new Error("No puedes eliminar al propietario del tablero");
+    }
+
+    const member = await ctx.db
+      .query("board_members")
+      .withIndex("by_board_and_user", (q) =>
+        q.eq("board_id", args.boardId).eq("user_id", args.userId)
+      )
+      .unique();
+    if (!member) {
+      throw new Error("Participante no encontrado");
+    }
+
+    await ctx.db.delete(member._id);
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_board", (q) => q.eq("board_id", args.boardId))
+      .collect();
+
+    for (const task of tasks) {
+      if (task.assignee_id === args.userId) {
+        await ctx.db.patch(task._id, {
+          assignee_id: undefined,
+          updated_at: Date.now(),
+        });
+      }
+    }
+  },
+});
+
+export const leaveBoard = mutation({
+  args: { boardId: v.id("boards") },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const board = await assertBoardAccess(ctx, args.boardId, identity.subject);
+
+    if (board.owner_id === identity.subject) {
+      throw new Error("El propietario no puede salir del tablero");
+    }
+
+    const member = await ctx.db
+      .query("board_members")
+      .withIndex("by_board_and_user", (q) =>
+        q.eq("board_id", args.boardId).eq("user_id", identity.subject)
+      )
+      .unique();
+
+    if (!member) {
+      throw new Error("No perteneces a este tablero");
+    }
+
+    await ctx.db.delete(member._id);
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_board", (q) => q.eq("board_id", args.boardId))
+      .collect();
+
+    for (const task of tasks) {
+      if (task.assignee_id === identity.subject) {
+        await ctx.db.patch(task._id, {
+          assignee_id: undefined,
+          updated_at: Date.now(),
+        });
+      }
+    }
+  },
+});
