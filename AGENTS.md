@@ -1,91 +1,92 @@
 # Project Instructions
 
-## Tech Stack
+## Current Tech Stack
 
-- **Next.js**: Use the latest version with App Router
-- **React**: Use the latest version
-- **Tailwind CSS**: Use Tailwind CSS 4
-- **TypeScript**: Use the latest version
-- **Shadcn/ui**: UI components based on Radix UI
-- **Convex**: Real-time backend (queries, mutations, actions)
-- **Better Auth**: Authentication system
-- **Vitest**: Testing framework
-- **Testing Library**: For React component tests
-- **Biome**: Linting and formatting (replaces ESLint and Prettier)
+- **Framework**: Next.js 16 (App Router, routes under `src/app/`)
+- **Frontend**: React 19 + TypeScript
+- **Styles**: Tailwind CSS 4 + global design tokens in `src/app/globals.css`
+- **UI Base**: Shadcn/ui (Radix primitives)
+- **Backend**: Convex (queries, mutations, actions)
+- **Auth**: Better Auth integrated with Convex (`@convex-dev/better-auth`)
+- **Realtime Presence**: `@convex-dev/presence`
+- **DnD**: `@dnd-kit/core` + `@dnd-kit/sortable`
+- **Animation**: `motion`
+- **Testing**: Vitest + Testing Library
+- **Lint/Format**: Biome
+
+## Current Product Scope
+
+- Multi-board kanban workspace with board CRUD
+- Task CRUD with drag-and-drop status/position updates
+- Tags per board (max 3 tags per task)
+- Subtasks per task (create, edit, complete, reorder, delete)
+- Comments in tasks (create, edit, delete)
+- Activity log per board/task
+- Board invitations by email (accept/reject)
+- Participants management (owner removes users, member can leave board)
+- Presence avatars for users online in the same board
+- Authentication with email/password and Google social login
+- Light/dark theme toggle
 
 ## Code Style
 
-- For files use lower kebab case for file names and folders
-- Use Biome for linting and formatting (DO NOT use ESLint or Prettier)
-- Follow Next.js App Router conventions
-- Use strict TypeScript
-- Functional components with React hooks
-- Prefer server components when possible
-- Use Shadcn/ui for common UI components
-- Install the shadcn/ui components using the command: `pnpm dlx shadcn@latest add <component>`
+- Use strict TypeScript and functional React components
+- Prefer server components; use client components only when needed
+- Use kebab-case for file and folder names
+- Use Biome (do not use ESLint/Prettier)
+- Use Shadcn/ui components as base UI primitives
+- Install missing Shadcn/ui components with `pnpm dlx shadcn@latest add <component>`
 
 ## Structure and Conventions
 
-- **Components**: Place in `components/` using PascalCase
-- **Utilities**: Place in `lib/` using camelCase
-- **Convex**: Place queries/mutations/actions in `convex/`
-- **Tests**: Place next to files with `.test.ts` or `.test.tsx` extension
-- **Routes**: Use Next.js App Router (folders in `app/`)
+- **App routes**: `src/app/`
+- **UI and feature components**: `src/components/`
+- **Utilities**: `src/lib/`
+- **Convex functions and schema**: `convex/`
+- **Tests**: colocated using `.test.ts` and `.test.tsx`
+- **Convex tables/fields**: lower snake_case
+- **Kanban task statuses**: `por_empezar`, `en_curso`, `terminado`
 
-## Testing
+## Auth and Route Protection
 
-- Use Vitest for unit tests
-- Use Testing Library for component tests
-- Write tests for critical logic and complex components
-- Follow the Arrange-Act-Assert pattern
+- Better Auth HTTP routes are mounted in Convex (`convex/http.ts`)
+- Next auth API endpoint is `src/app/api/auth/[...all]/route.ts`
+- Route protection is implemented in `src/proxy.ts`
+- Public routes: `/sign-in`, `/sign-up`, `/api/auth/*`
+- Protected area: `/dashboard/*`
 
-## Backend (Convex)
+## Convex Guidelines
 
-- Use queries for data reading
-- Use mutations for data writing
-- Use actions for async operations or external calls
-- Implement validation in mutations and actions
-- Use indexes when necessary to optimize queries
-- Use lower snake case for table names and fields
+- Use queries for reads, mutations for writes, actions for external/compound logic
+- Validate authorization in every function touching board-scoped data
+- Use indexes for hot paths (`by_board`, `by_board_status`, etc.)
+- Keep ownership/membership checks explicit for board access
+- Soft delete boards via `active: false` (do not hard delete board docs)
 
-## Authentication
+## UI/UX Guidelines
 
-- Use Better Auth for session management
-- Protect routes and actions as needed
-- Use middleware when appropriate
+- Keep mobile-first responsive layouts
+- Use accessible labels, focus states, and button semantics
+- Keep `cursor-pointer` on interactive/clickable objects
+- Preserve existing visual language (tokens, cards, subtle motion)
 
-## UI/UX
+## Commands
 
-- Use Shadcn/ui components as base
-- Apply Tailwind CSS 4 for styles
-- Follow accessible design principles
-- Optimize for mobile devices (mobile-first)
-- Every object clickeable should haver cursor-pointer class
-
-## Linting y Type Checking
-
-- Run lint: `pnpm biome check .`
-- Run format: `pnpm biome format .`
-- Run typecheck: `pnpm tsc --noEmit`
+- Dev: `pnpm dev`
+- Test (watch): `pnpm test`
+- Test (CI): `pnpm test:run`
+- Build: `pnpm build`
+- Lint + autofix: `pnpm lint`
+- Type check: `pnpm type-check`
+- Full local verification: `pnpm verify`
 
 ## Conventional Commits
 
-- Use Conventional Commits format for all commit messages
 - Format: `type(scope): subject`
-- Allowed types:
-  - `feat`: New feature
-  - `fix`: Bug fix
-  - `docs`: Documentation changes
-  - `style`: Formatting changes (don't affect code)
-  - `refactor`: Code refactoring
-  - `test`: Add or modify tests
-  - `chore`: Maintenance tasks (deps, config, etc.)
-  - `perf`: Performance improvements
-  - `ci`: CI/CD changes
-- Optional scope: affected area (e.g., `feat(ui): add dark mode toggle`)
-- Subject in lowercase, imperative, no trailing period
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`
+- Subject: lowercase, imperative, no trailing period
 - Examples:
-  - `feat(auth): add login form`
-  - `fix(convex): resolve task query error`
-  - `refactor(components): extract card component`
-  - `docs(readme): update setup instructions`
+  - `feat(auth): add google sign-in flow`
+  - `fix(convex): validate board membership on task updates`
+  - `refactor(ui): simplify task dialog actions`
+  - `docs(readme): refresh project status and setup`

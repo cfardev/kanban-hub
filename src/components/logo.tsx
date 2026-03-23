@@ -39,7 +39,7 @@ export function Logo({ className = "", href, size = "md" }: LogoProps) {
       transition={{ duration: 0.15 }}
     >
       <Image
-        src="/logo.svg"
+        src={`/logo.svg?v=${Date.now()}`}
         alt="Kanban Hub logo"
         width={style.icon}
         height={style.icon}
