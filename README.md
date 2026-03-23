@@ -1,85 +1,83 @@
 # Kanban Hub
 
-Kanban Hub is a collaborative kanban workspace focused on team planning with realtime updates, invitations, and rich task management.
+Kanban Hub is a collaborative Kanban app built with Next.js, Convex, and Better Auth.
 
-## Current Status
+## Requirements
 
-The current implementation includes:
+- Node.js 20+
+- pnpm 9+
+- A Convex account
 
-- Multi-board workspace with board CRUD
-- Board access control with owner/member roles
-- Board invitations by email (accept/reject)
-- Participant management (owner removes users, member can leave)
-- Task CRUD with drag-and-drop between statuses
-- Status flow: `por_empezar` → `en_curso` → `terminado`
-- Tags per board with color system (max 3 tags per task)
-- Subtasks (create, edit, toggle complete, reorder, delete)
-- Task comments (create, edit, delete)
-- Activity log for board/task actions
-- Realtime presence avatars inside each board
-- Authentication with Better Auth (email/password + Google)
-- Route protection for `/dashboard/*`
-- Light/dark theme toggle and responsive UI
+## Quick Setup
 
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **Frontend**: React 19 + TypeScript
-- **Styles**: Tailwind CSS 4 + design tokens in `src/app/globals.css`
-- **UI**: Shadcn/ui (Radix primitives)
-- **Backend**: Convex (queries, mutations, actions)
-- **Auth**: Better Auth + Convex integration (`@convex-dev/better-auth`)
-- **Realtime Presence**: `@convex-dev/presence`
-- **Drag and Drop**: `@dnd-kit/core` + `@dnd-kit/sortable`
-- **Animation**: `motion`
-- **Testing**: Vitest + Testing Library
-- **Linting/Formatting**: Biome
-
-## Architecture Notes
-
-- Next.js auth API route: `src/app/api/auth/[...all]/route.ts`
-- Better Auth HTTP routes mounted in Convex: `convex/http.ts`
-- Route protection middleware: `src/proxy.ts`
-- Public routes: `/sign-in`, `/sign-up`, `/api/auth/*`
-- Protected routes: `/dashboard/*`
-
-## Local Development
+1. Clone the repository and install dependencies.
 
 ```bash
-# Install dependencies
+git clone git@github.com:cfardev/kanban-hub.git
+cd kanban-hub
 pnpm install
+```
 
-# Start development server
+2. Initialize and link Convex (create/select a deployment).
+
+```bash
+pnpm convex dev
+```
+
+3. Create a `.env.local` file in the project root with the following variables.
+
+```bash
+NEXT_PUBLIC_CONVEX_URL=https://<your-deployment>.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=http://localhost:3000
+BETTER_AUTH_SECRET=<long-random-secret>
+BETTER_AUTH_BASE_URL=http://localhost:3000
+
+# Optional (Google OAuth)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Optional (base URL alias)
+SITE_URL=http://localhost:3000
+```
+
+4. Start the app.
+
+```bash
 pnpm dev
-
-# Run tests in watch mode
-pnpm test
-
-# Run tests once (CI mode)
-pnpm test:run
-
-# Lint and auto-fix
-pnpm lint
-
-# Type checking
-pnpm type-check
-
-# Production build
-pnpm build
-
-# Full local verification (lint + type-check + build)
-pnpm verify
 ```
 
-## Project Structure
+Open `http://localhost:3000`.
 
-```text
-kanban-hub/
-├── src/
-│   ├── app/            # Next.js App Router pages and API routes
-│   ├── components/     # UI and feature components
-│   ├── lib/            # Client/server helpers and shared utilities
-│   └── test/           # Test setup
-├── convex/             # Convex schema, queries, mutations, actions, auth routes
-└── AGENTS.md           # Project-specific instructions for coding agents
+## Environment Variables
+
+- `NEXT_PUBLIC_CONVEX_URL`: your Convex deployment URL.
+- `NEXT_PUBLIC_CONVEX_SITE_URL`: public frontend URL (local: `http://localhost:3000`).
+- `BETTER_AUTH_SECRET`: secret used by Better Auth to sign cookies/tokens.
+- `BETTER_AUTH_BASE_URL`: app base URL used by auth callbacks.
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: required only if you want Google login.
+- `SITE_URL`: optional fallback for base URL/trusted origins.
+
+Tip: generate `BETTER_AUTH_SECRET` with:
+
+```bash
+openssl rand -base64 32
 ```
+
+## Useful Scripts
+
+```bash
+pnpm dev        # development
+pnpm test       # watch tests
+pnpm test:run   # run tests once
+pnpm lint       # biome check --write
+pnpm type-check # TypeScript check
+pnpm build      # production build
+pnpm verify     # lint + type-check + build
+```
+
+## Notes
+
+- Public routes: `/sign-in`, `/sign-up`, `/api/auth/*`
+- Protected routes: `/dashboard/*`
+- Next.js auth endpoint: `src/app/api/auth/[...all]/route.ts`
+- Better Auth HTTP routes in Convex: `convex/http.ts`
