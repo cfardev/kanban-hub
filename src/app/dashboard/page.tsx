@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { LayoutGrid, Pencil, Plus, Trash2 } from "lucide-react";
+import { LayoutGrid, LogOut, Pencil, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const createBoard = useMutation(api.boards.create);
   const updateBoard = useMutation(api.boards.update);
   const removeBoard = useMutation(api.boards.remove);
+  const leaveBoard = useMutation(api.boards.leaveBoard);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState<{
@@ -55,6 +56,7 @@ export default function DashboardPage() {
     description?: string;
   } | null>(null);
   const [boardToDelete, setBoardToDelete] = useState<Id<"boards"> | null>(null);
+  const [boardToLeave, setBoardToLeave] = useState<Id<"boards"> | null>(null);
 
   useEffect(() => {
     if (user === null) {
@@ -103,6 +105,13 @@ export default function DashboardPage() {
     if (boardToDelete) {
       removeBoard({ id: boardToDelete });
       setBoardToDelete(null);
+    }
+  };
+
+  const handleLeaveConfirm = async () => {
+    if (boardToLeave) {
+      await leaveBoard({ boardId: boardToLeave });
+      setBoardToLeave(null);
     }
   };
 
@@ -177,6 +186,29 @@ export default function DashboardPage() {
           </AlertDialogContent>
         </AlertDialog>
 
+        <AlertDialog
+          open={boardToLeave !== null}
+          onOpenChange={(open) => !open && setBoardToLeave(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Salir de este tablero?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Dejarás de ver este tablero en tu dashboard hasta que te vuelvan a invitar.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleLeaveConfirm}
+                className="cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/20"
+              >
+                Salir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {boards.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -208,78 +240,111 @@ export default function DashboardPage() {
             initial="hidden"
             animate="visible"
           >
-            {boards.map((board, i) => (
-              <motion.div
-                key={board._id}
-                custom={i}
-                variants={boardCardVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <Link href={`/dashboard/boards/${board._id}`} className="cursor-pointer block">
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.99 }}
-                    transition={{ duration: 0.2 }}
+            {boards.map((board, i) => {
+              const isOwner = board.owner_id === user.subject;
+              const ownerLabel = board.owner_name?.trim() || "Usuario";
+
+              return (
+                <motion.div
+                  key={board._id}
+                  custom={i}
+                  variants={boardCardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="h-full"
+                >
+                  <Link
+                    href={`/dashboard/boards/${board._id}`}
+                    className="block h-full cursor-pointer"
                   >
-                    <Card className="h-full border-border/80 bg-background/55 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-background/80">
-                      <CardHeader>
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <CardTitle className="text-base truncate">{board.name}</CardTitle>
+                    <motion.div
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.99 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-full"
+                    >
+                      <Card className="flex h-52 flex-col border-border/80 bg-background/55 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-background/80">
+                        <CardHeader className="flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <LayoutGrid className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <CardTitle className="text-base truncate">{board.name}</CardTitle>
+                            </div>
+                            {isOwner ? (
+                              <div className="flex shrink-0 gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEdit(board);
+                                  }}
+                                  aria-label="Editar"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDeleteClick(board._id);
+                                  }}
+                                  aria-label="Eliminar"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 cursor-pointer text-muted-foreground hover:text-destructive"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setBoardToLeave(board._id);
+                                }}
+                                aria-label="Salir del tablero"
+                              >
+                                <LogOut className="h-3.5 w-3.5" />
+                                Salir
+                              </Button>
+                            )}
                           </div>
-                          <div className="flex shrink-0 gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleEdit(board);
-                              }}
-                              aria-label="Editar"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-destructive"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDeleteClick(board._id);
-                              }}
-                              aria-label="Eliminar"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                        {board.description && (
-                          <CardDescription className="mt-1 line-clamp-2">
-                            {board.description}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-xs text-muted-foreground">
-                          Creado {new Date(board.created_at).toLocaleDateString("es-ES")}
-                          {board.updated_at !== board.created_at && (
-                            <>
-                              {" "}
-                              · Actualizado {new Date(board.updated_at).toLocaleDateString("es-ES")}
-                            </>
+                          {board.description && (
+                            <CardDescription className="mt-1 line-clamp-2">
+                              {board.description}
+                            </CardDescription>
                           )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </Link>
-              </motion.div>
-            ))}
+                          {!isOwner && (
+                            <CardDescription className="mt-2 text-xs text-foreground/85">
+                              Dueño: {ownerLabel}
+                            </CardDescription>
+                          )}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-xs text-muted-foreground">
+                            Creado {new Date(board.created_at).toLocaleDateString("es-ES")}
+                            {board.updated_at !== board.created_at && (
+                              <>
+                                {" "}
+                                · Actualizado{" "}
+                                {new Date(board.updated_at).toLocaleDateString("es-ES")}
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>

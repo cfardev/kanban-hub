@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { components } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { internalQuery, mutation, query } from "./_generated/server";
@@ -102,7 +103,33 @@ export const list = query({
         (b): b is Doc<"boards"> => b != null && b?.active === true && !ownedIds.has(b._id)
       ),
     ];
-    return merged.sort((a, b) => b.created_at - a.created_at);
+
+    const sorted = merged.sort((a, b) => b.created_at - a.created_at);
+
+    const ownerIds = [...new Set(sorted.map((board) => board.owner_id).filter((id) => id != null))];
+    const ownerNameById = new Map<string, string | null>();
+
+    await Promise.all(
+      ownerIds.map(async (ownerId) => {
+        const userDoc = await ctx.runQuery(components.betterAuth.adapter.findOne, {
+          model: "user",
+          where: [{ field: "_id", operator: "eq", value: ownerId }],
+        });
+
+        if (!userDoc) {
+          ownerNameById.set(ownerId, null);
+          return;
+        }
+
+        const user = userDoc as { name?: string | null };
+        ownerNameById.set(ownerId, user.name ?? null);
+      })
+    );
+
+    return sorted.map((board) => ({
+      ...board,
+      owner_name: board.owner_id ? (ownerNameById.get(board.owner_id) ?? null) : null,
+    }));
   },
 });
 

@@ -10,6 +10,7 @@ const {
   createBoardMock,
   updateBoardMock,
   removeBoardMock,
+  leaveBoardMock,
   replaceMock,
 } = vi.hoisted(() => ({
   useRouterMock: vi.fn(),
@@ -18,6 +19,7 @@ const {
   createBoardMock: vi.fn(),
   updateBoardMock: vi.fn(),
   removeBoardMock: vi.fn(),
+  leaveBoardMock: vi.fn(),
   replaceMock: vi.fn(),
 }));
 
@@ -89,6 +91,7 @@ vi.mock("@/convex/_generated/api", () => ({
       create: "boards.create",
       update: "boards.update",
       remove: "boards.remove",
+      leaveBoard: "boards.leaveBoard",
     },
   },
 }));
@@ -111,6 +114,7 @@ describe("DashboardPage", () => {
       if (mutation === "boards.create") return createBoardMock;
       if (mutation === "boards.update") return updateBoardMock;
       if (mutation === "boards.remove") return removeBoardMock;
+      if (mutation === "boards.leaveBoard") return leaveBoardMock;
       return vi.fn();
     });
   });
