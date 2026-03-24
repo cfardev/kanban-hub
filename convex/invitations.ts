@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { components } from "./_generated/api";
 import { internal } from "./_generated/api";
 import { action, internalMutation, mutation, query } from "./_generated/server";
@@ -24,7 +24,7 @@ export const create = internalMutation({
       .filter((q) => q.eq(q.field("status"), "pending"))
       .first();
     if (existing) {
-      throw new Error("Ya tiene una invitación pendiente");
+      throw new ConvexError("Ya tiene una invitación pendiente");
     }
     const alreadyMember = await ctx.db
       .query("board_members")
@@ -33,7 +33,7 @@ export const create = internalMutation({
       )
       .unique();
     if (alreadyMember) {
-      throw new Error("El usuario ya es miembro del tablero");
+      throw new ConvexError("El usuario ya es miembro del tablero");
     }
     const now = Date.now();
     return await ctx.db.insert("board_invitations", {
@@ -61,17 +61,17 @@ export const inviteByEmail = action({
     const board = await ctx.runQuery(internal.boards.getBoardIfOwner, {
       id: args.boardId,
     });
-    if (!board) throw new Error("Board not found or you are not the owner");
+    if (!board) throw new ConvexError("Board not found or you are not the owner");
 
     const inviteeDoc = await ctx.runQuery(components.betterAuth.adapter.findOne, {
       model: "user",
       where: [{ field: "email", operator: "eq", value: args.email.trim().toLowerCase() }],
     });
-    if (!inviteeDoc) throw new Error("Usuario no encontrado");
+    if (!inviteeDoc) throw new ConvexError("Usuario no encontrado");
 
     const inviteeId = (inviteeDoc as { _id: string })._id;
     if (inviteeId === identity.subject) {
-      throw new Error("No puedes invitarte a ti mismo");
+      throw new ConvexError("No puedes invitarte a ti mismo");
     }
 
     const inviterDoc = await ctx.runQuery(components.betterAuth.adapter.findOne, {

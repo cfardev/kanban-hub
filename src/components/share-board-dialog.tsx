@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useState } from "react";
 import { LuShield, LuTrash2, LuUserMinus, LuUsers } from "react-icons/lu";
 
@@ -97,7 +98,13 @@ export function ShareBoardDialog({
       setSuccess(true);
       setEmail("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al enviar la invitación");
+      setError(
+        err instanceof ConvexError
+          ? (err.data as string)
+          : err instanceof Error
+            ? err.message
+            : "Error al enviar la invitación"
+      );
     }
   };
 
