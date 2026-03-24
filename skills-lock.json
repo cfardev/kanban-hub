@@ -6,6 +6,16 @@
       "sourceType": "github",
       "computedHash": "4d5fe1dacfebc0c1b3837b061405150ed2e4971c096543afc46c23161c5a4f7a"
     },
+    "openrouter": {
+      "source": "bobmatnyc/claude-mpm-skills",
+      "sourceType": "github",
+      "computedHash": "b59d8682e25c33984f53a35b25bf620e19eea5ea3a9c7102db7d2910c2a6d60a"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "c858d2d9023e73edb4e5504868cb0e36313e58fd56af12ef888b43c5634a3c17"
+    },
     "vitest": {
       "source": "antfu/skills",
       "sourceType": "github",

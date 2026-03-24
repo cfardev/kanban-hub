@@ -19,10 +19,8 @@ function getSystemTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const stored = localStorage.getItem("theme") as Theme | null;
     const initialTheme = stored || getSystemTheme();
     setThemeState(initialTheme);
@@ -36,7 +34,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    setThemeState((prevTheme) => {
+      const nextTheme = prevTheme === "light" ? "dark" : "light";
+      localStorage.setItem("theme", nextTheme);
+      document.documentElement.classList.toggle("dark", nextTheme === "dark");
+      return nextTheme;
+    });
   };
 
   return (

@@ -43,6 +43,7 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayName = user?.name ?? user?.email ?? "";
@@ -54,6 +55,15 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
   useEffect(() => {
     if (open && user) setName(user.name ?? user.email ?? "");
   }, [open, user]);
+
+  useEffect(() => {
+    if (pendingFile) {
+      const url = URL.createObjectURL(pendingFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setPreviewUrl(undefined);
+  }, [pendingFile]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -99,15 +109,6 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
   if (user === null) return null;
 
   const initials = getInitials(user.name, user.email);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    if (pendingFile) {
-      const url = URL.createObjectURL(pendingFile);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-    setPreviewUrl(undefined);
-  }, [pendingFile]);
   const imageUrl = previewUrl ?? userImage;
 
   return (
