@@ -38,6 +38,10 @@ GOOGLE_CLIENT_SECRET=
 
 # Optional (base URL alias)
 SITE_URL=http://localhost:3000
+
+# Optional (AI assistant with OpenRouter)
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=deepseek/deepseek-v3.2
 ```
 
 4. Start the app.
@@ -56,6 +60,8 @@ Open `http://localhost:3000`.
 - `BETTER_AUTH_BASE_URL`: app base URL used by auth callbacks.
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: required only if you want Google login.
 - `SITE_URL`: optional fallback for base URL/trusted origins.
+- `OPENROUTER_API_KEY`: API key for OpenRouter (required to use the AI task assistant).
+- `OPENROUTER_MODEL`: optional model override (default: `deepseek/deepseek-v3.2`).
 
 Tip: generate `BETTER_AUTH_SECRET` with:
 

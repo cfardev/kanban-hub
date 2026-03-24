@@ -26,9 +26,10 @@ async function assertBoardAccess(ctx: QueryCtx, boardId: Id<"boards">, userId: s
   return board;
 }
 
-async function getTaskOrThrow(ctx: QueryCtx, taskId: Id<"tasks">) {
+async function getTaskOrThrow(ctx: QueryCtx, taskId: Id<"tasks">, boardId?: Id<"boards">) {
   const task = await ctx.db.get(taskId);
   if (!task) throw new Error("Task not found");
+  if (boardId && task.board_id !== boardId) throw new Error("Task not found");
   return task;
 }
 
@@ -38,7 +39,10 @@ export const listByTask = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
     await assertBoardAccess(ctx, args.boardId, identity.subject);
-    await getTaskOrThrow(ctx, args.taskId);
+    const task = await ctx.db.get(args.taskId);
+    if (!task || task.board_id !== args.boardId) {
+      return [];
+    }
     const subtasks = await ctx.db
       .query("subtasks")
       .withIndex("by_task", (q) => q.eq("task_id", args.taskId))
@@ -56,7 +60,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     await assertBoardAccess(ctx, args.boardId, identity.subject);
-    await getTaskOrThrow(ctx, args.taskId);
+    await getTaskOrThrow(ctx, args.taskId, args.boardId);
     const title = args.title.trim();
     if (title.length === 0) {
       throw new Error("Subtask title cannot be empty");
@@ -154,7 +158,7 @@ export const updatePositions = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     await assertBoardAccess(ctx, args.boardId, identity.subject);
-    await getTaskOrThrow(ctx, args.taskId);
+    await getTaskOrThrow(ctx, args.taskId, args.boardId);
     const existingSubtasks = await ctx.db
       .query("subtasks")
       .withIndex("by_task", (q) => q.eq("task_id", args.taskId))

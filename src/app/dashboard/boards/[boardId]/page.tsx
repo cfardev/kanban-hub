@@ -1,6 +1,7 @@
 "use client";
 
 import { ActivityDialog } from "@/components/activity/activity-dialog";
+import { AiTaskAssistantDialog } from "@/components/ai-task-assistant-dialog";
 import { AvatarDropdown } from "@/components/avatar-dropdown";
 import { BoardPresenceAvatars } from "@/components/board-presence-avatars";
 import { InvitationNotifications } from "@/components/invitation-notifications";
@@ -18,6 +19,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { LuSparkles } from "react-icons/lu";
 
 type Task = Doc<"tasks">;
 type Tag = Doc<"tags">;
@@ -38,6 +40,7 @@ export default function BoardPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
 
@@ -134,7 +137,7 @@ export default function BoardPage() {
             <AvatarDropdown />
           </div>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Button variant="ghost" size="icon" className="shrink-0 cursor-pointer" asChild>
               <Link href="/dashboard" aria-label="Volver">
@@ -147,16 +150,17 @@ export default function BoardPage() {
                 <p className="truncate text-sm text-muted-foreground">{board.description}</p>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 cursor-pointer"
-                onClick={() => setActivityDialogOpen(true)}
-                title="Ver historial de actividad"
-              >
-                <Clock className="h-4 w-4" />
-              </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            {currentUser && (currentUser as { subject?: string }).subject && (
+              <BoardPresenceAvatars
+                key={boardId}
+                boardId={boardId}
+                currentUserId={(currentUser as { subject: string }).subject}
+              />
+            )}
+            <div className="h-5 w-px bg-border/70 hidden sm:block" />
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -166,15 +170,26 @@ export default function BoardPage() {
                 <Users className="h-3.5 w-3.5 mr-1.5" />
                 Participantes
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 cursor-pointer border-sky-300/70 bg-sky-500/10 text-sky-700 hover:bg-sky-500/15 dark:border-sky-800 dark:text-sky-300"
+                onClick={() => setAiAssistantOpen(true)}
+              >
+                <LuSparkles className="h-3.5 w-3.5 mr-1.5" />
+                Asistente IA
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 cursor-pointer"
+                onClick={() => setActivityDialogOpen(true)}
+                title="Ver historial de actividad"
+              >
+                <Clock className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-          {currentUser && (currentUser as { subject?: string }).subject && (
-            <BoardPresenceAvatars
-              key={boardId}
-              boardId={boardId}
-              currentUserId={(currentUser as { subject: string }).subject}
-            />
-          )}
         </div>
         <ShareBoardDialog
           open={shareDialogOpen}
@@ -208,6 +223,11 @@ export default function BoardPage() {
           onOpenChange={setActivityDialogOpen}
           boardId={boardId as never}
           participantsInfo={participantsInfoMap}
+        />
+        <AiTaskAssistantDialog
+          open={aiAssistantOpen}
+          onOpenChange={setAiAssistantOpen}
+          boardId={boardId as never}
         />
       </div>
     </div>

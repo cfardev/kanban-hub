@@ -212,6 +212,7 @@ export function KanbanBoard({
             <KanbanColumn
               key={status}
               status={status}
+              boardId={boardId as Id<"boards">}
               tasks={tasksByStatus[status]}
               onTaskClick={onTaskClick ?? (() => {})}
               onNewTask={status === "por_empezar" ? onNewTask : undefined}

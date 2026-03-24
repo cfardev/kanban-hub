@@ -2,14 +2,28 @@
 
 import type { ParticipantsInfoMap } from "@/components/kanban-board";
 import { TaskCard } from "@/components/task-card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useMutation } from "convex/react";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
+import { useState } from "react";
+import { LuTrash2 } from "react-icons/lu";
 
 const columnVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -57,6 +71,7 @@ const COLUMN_CONFIG: Record<
 };
 
 export function KanbanColumn({
+  boardId,
   status,
   tasks,
   onTaskClick,
@@ -65,6 +80,7 @@ export function KanbanColumn({
   activeTaskId = null,
   tags = [],
 }: {
+  boardId: Id<"boards">;
   status: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
@@ -73,6 +89,9 @@ export function KanbanColumn({
   activeTaskId?: Id<"tasks"> | null;
   tags?: Tag[];
 }) {
+  const removeCompletedTasks = useMutation(api.tasks.removeCompleted);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const config = COLUMN_CONFIG[status] ?? {
     label: status,
     dotClass: "bg-muted-foreground",
@@ -85,6 +104,7 @@ export function KanbanColumn({
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const taskIds = tasks.map((t) => t._id);
   const isEmpty = tasks.length === 0;
+  const isDoneColumn = status === "terminado";
 
   return (
     <motion.div className="flex min-w-[280px] flex-1 flex-col" variants={columnVariants}>
@@ -100,6 +120,17 @@ export function KanbanColumn({
             <h2 className={cn("text-sm font-semibold tracking-tight", config.labelClass)}>
               {config.label}
             </h2>
+            {isDoneColumn && tasks.length > 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 cursor-pointer gap-1.5 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                onClick={() => setConfirmOpen(true)}
+              >
+                <LuTrash2 className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+            ) : null}
             <span
               className={cn(
                 "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums",
@@ -151,6 +182,29 @@ export function KanbanColumn({
           ) : null}
         </CardContent>
       </Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar tareas terminadas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminarán todas las tareas de la columna "Terminado".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="cursor-pointer bg-destructive/10 text-destructive hover:bg-destructive/20"
+              onClick={() => {
+                void removeCompletedTasks({ boardId });
+                setConfirmOpen(false);
+              }}
+            >
+              Eliminar todas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

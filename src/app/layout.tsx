@@ -39,9 +39,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <ConvexClientProvider initialToken={token}>
-            {children}
-          </ConvexClientProvider>
+          <ConvexClientProvider initialToken={token}>{children}</ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

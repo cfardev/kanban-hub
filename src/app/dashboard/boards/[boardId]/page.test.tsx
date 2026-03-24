@@ -8,6 +8,7 @@ const {
   useRouterMock,
   useQueryMock,
   useActionMock,
+  useMutationMock,
   replaceMock,
   getUsersPublicInfoMock,
 } = vi.hoisted(() => ({
@@ -15,6 +16,7 @@ const {
   useRouterMock: vi.fn(),
   useQueryMock: vi.fn(),
   useActionMock: vi.fn(),
+  useMutationMock: vi.fn(),
   replaceMock: vi.fn(),
   getUsersPublicInfoMock: vi.fn(),
 }));
@@ -33,6 +35,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("convex/react", () => ({
   useQuery: useQueryMock,
   useAction: useActionMock,
+  useMutation: useMutationMock,
 }));
 
 vi.mock("@/convex/_generated/api", () => ({
@@ -51,6 +54,10 @@ vi.mock("@/convex/_generated/api", () => ({
       getCurrentUser: "auth.getCurrentUser",
       getUsersPublicInfo: "auth.getUsersPublicInfo",
     },
+    ai: {
+      generateTaskSuggestions: "ai.generateTaskSuggestions",
+      createTasksFromSuggestions: "ai.createTasksFromSuggestions",
+    },
   },
 }));
 
@@ -68,6 +75,10 @@ vi.mock("@/components/share-board-dialog", () => ({
 }));
 vi.mock("@/components/activity/activity-dialog", () => ({
   ActivityDialog: ({ open }: { open: boolean }) => (open ? <div>ActivityOpen</div> : null),
+}));
+vi.mock("@/components/ai-task-assistant-dialog", () => ({
+  AiTaskAssistantDialog: ({ open }: { open: boolean }) =>
+    open ? <div>AiAssistantOpen</div> : null,
 }));
 vi.mock("@/components/task-dialog", () => ({
   TaskDialog: ({ open }: { open: boolean }) => (open ? <div>TaskDialogOpen</div> : null),
@@ -125,6 +136,7 @@ describe("BoardPage", () => {
       { _id: "owner-1", name: "Owner", image: null },
       { _id: "u2", name: "Guest", image: null },
     ]);
+    useMutationMock.mockReturnValue(vi.fn());
     useActionMock.mockReturnValue(getUsersPublicInfoMock);
   });
 
@@ -145,5 +157,12 @@ describe("BoardPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Nuevo task" }));
     expect(screen.getByText("TaskDialogOpen")).toBeInTheDocument();
+  });
+
+  it("opens AI assistant dialog", async () => {
+    render(<BoardPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Asistente IA" }));
+    expect(screen.getByText("AiAssistantOpen")).toBeInTheDocument();
   });
 });

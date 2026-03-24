@@ -274,6 +274,31 @@ export const remove = mutation({
   },
 });
 
+export const removeCompleted = mutation({
+  args: { boardId: v.id("boards") },
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    await assertBoardAccess(ctx, args.boardId, identity.subject);
+
+    const completedTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_board_status", (q) => q.eq("board_id", args.boardId).eq("status", "terminado"))
+      .collect();
+
+    for (const task of completedTasks) {
+      await ctx.db.delete(task._id);
+      await ctx.runMutation(api.activity.logTaskDeleted, {
+        boardId: args.boardId,
+        taskId: task._id,
+        userId: identity.subject,
+        title: task.title,
+      });
+    }
+
+    return { deleted: completedTasks.length };
+  },
+});
+
 /** One-off: delete tasks that don't match the new schema (missing board_id). Run once from Convex dashboard if you see schema validation errors. */
 export const deleteLegacyTasks = mutation({
   args: {},
