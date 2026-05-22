@@ -182,9 +182,9 @@ export function TaskDialog({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full p-0 gap-0 overflow-hidden sm:max-w-xl">
-          <form onSubmit={handleSubmit}>
-            <SheetHeader className="px-6 pt-6 pb-2 space-y-1">
+        <SheetContent side="right" className="w-full p-0 gap-0 flex flex-col h-full sm:max-w-xl">
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <SheetHeader className="px-6 pt-6 pb-2 space-y-1 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <LuSquareCheck className="h-5 w-5" />
@@ -199,7 +199,7 @@ export function TaskDialog({
                 </div>
               </div>
             </SheetHeader>
-            <div className="grid gap-5 px-6 py-5">
+            <div className="grid gap-5 px-6 py-5 overflow-y-auto flex-1">
               <div className="grid gap-2">
                 <Label htmlFor="task-title" className="text-xs font-medium">
                   Título
@@ -276,7 +276,7 @@ export function TaskDialog({
                 </div>
               )}
             </div>
-            <div className="border-t border-border bg-muted/30 px-6 py-4">
+            <div className="border-t border-border bg-muted/30 px-6 py-4 shrink-0">
               <SheetFooter className="flex-row flex-wrap gap-2 sm:justify-between">
                 {!isCreate ? (
                   <Button
