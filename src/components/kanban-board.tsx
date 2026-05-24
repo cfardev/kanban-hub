@@ -5,6 +5,7 @@ import { TaskCardOverlay } from "@/components/task-card-overlay";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import {
+  type CollisionDetection,
   DndContext,
   type DragEndEvent,
   DragOverlay,
@@ -13,6 +14,7 @@ import {
   PointerSensor,
   TouchSensor,
   closestCorners,
+  pointerWithin,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -32,6 +34,14 @@ type Task = Doc<"tasks">;
 type Tag = Doc<"tags">;
 
 const COLUMNS = ["por_empezar", "en_curso", "terminado"] as const;
+
+const collisionDetectionStrategy: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+  return closestCorners(args);
+};
 
 export type ParticipantsInfoMap = Record<string, { name: string | null; image: string | null }>;
 
@@ -196,7 +206,7 @@ export function KanbanBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetectionStrategy}
       modifiers={[keepOriginModifier]}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
