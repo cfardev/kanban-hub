@@ -67,6 +67,8 @@ export function KanbanBoard({
   onNewTask,
   participantsInfoMap = {},
   tags = [],
+  currentUserId,
+  showOnlyMyTasks = false,
 }: {
   boardId: string;
   tasks: Task[];
@@ -74,6 +76,8 @@ export function KanbanBoard({
   onNewTask?: () => void;
   participantsInfoMap?: ParticipantsInfoMap;
   tags?: Tag[];
+  currentUserId?: string;
+  showOnlyMyTasks?: boolean;
 }) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [pendingMoves, setPendingMoves] = useState<
@@ -98,6 +102,16 @@ export function KanbanBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
+  const displayedTasks = useMemo(
+    () =>
+      showOnlyMyTasks
+        ? currentUserId
+          ? visibleTasks.filter((task) => task.assignee_id === currentUserId)
+          : []
+        : visibleTasks,
+    [currentUserId, showOnlyMyTasks, visibleTasks]
   );
 
   const handleDragStart = useCallback(
@@ -187,7 +201,7 @@ export function KanbanBoard({
 
   const tasksByStatus = COLUMNS.reduce(
     (acc, status) => {
-      acc[status] = visibleTasks
+      acc[status] = displayedTasks
         .filter((t) => t.status === status)
         .sort((a, b) => a.position - b.position);
       return acc;
@@ -229,6 +243,8 @@ export function KanbanBoard({
               participantsInfoMap={participantsInfoMap}
               activeTaskId={activeTask?._id ?? null}
               tags={tags}
+              showCompletedCleanup={!showOnlyMyTasks}
+              isPersonalFilterActive={showOnlyMyTasks}
             />
           ))}
         </div>

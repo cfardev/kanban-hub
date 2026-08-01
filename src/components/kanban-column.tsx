@@ -79,6 +79,8 @@ export function KanbanColumn({
   participantsInfoMap = {},
   activeTaskId = null,
   tags = [],
+  showCompletedCleanup = true,
+  isPersonalFilterActive = false,
 }: {
   boardId: Id<"boards">;
   status: string;
@@ -88,6 +90,8 @@ export function KanbanColumn({
   participantsInfoMap?: ParticipantsInfoMap;
   activeTaskId?: Id<"tasks"> | null;
   tags?: Tag[];
+  showCompletedCleanup?: boolean;
+  isPersonalFilterActive?: boolean;
 }) {
   const removeCompletedTasks = useMutation(api.tasks.removeCompleted);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -120,7 +124,7 @@ export function KanbanColumn({
             <h2 className={cn("text-sm font-semibold tracking-tight", config.labelClass)}>
               {config.label}
             </h2>
-            {isDoneColumn && tasks.length > 0 ? (
+            {isDoneColumn && showCompletedCleanup && tasks.length > 0 ? (
               <Button
                 variant="ghost"
                 size="sm"
@@ -165,7 +169,11 @@ export function KanbanColumn({
           {isEmpty ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-1 py-8">
               <p className="text-center text-sm font-medium text-muted-foreground/60">
-                {isOver ? "Suelta aquí" : config.emptyText}
+                {isOver
+                  ? "Suelta aquí"
+                  : isPersonalFilterActive
+                    ? "No tienes tareas en esta columna"
+                    : config.emptyText}
               </p>
             </div>
           ) : null}

@@ -14,8 +14,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useAction, useQuery } from "convex/react";
-import { Clock } from "lucide-react";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Clock, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -41,6 +40,7 @@ export default function BoardPage() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
 
@@ -83,7 +83,8 @@ export default function BoardPage() {
     board === undefined ||
     tasks === undefined ||
     participantIds === undefined ||
-    tags === undefined
+    tags === undefined ||
+    currentUser === undefined
   ) {
     return (
       <div className="min-h-screen p-4 md:p-6">
@@ -171,6 +172,16 @@ export default function BoardPage() {
                 Participantes
               </Button>
               <Button
+                variant={showOnlyMyTasks ? "secondary" : "outline"}
+                size="sm"
+                className="shrink-0 cursor-pointer"
+                aria-pressed={showOnlyMyTasks}
+                onClick={() => setShowOnlyMyTasks((current) => !current)}
+              >
+                <UserRound className="mr-1.5 h-3.5 w-3.5" />
+                Mis tareas
+              </Button>
+              <Button
                 variant="outline"
                 size="sm"
                 className="shrink-0 cursor-pointer border-sky-300/70 bg-sky-500/10 text-sky-700 hover:bg-sky-500/15 dark:border-sky-800 dark:text-sky-300"
@@ -208,6 +219,8 @@ export default function BoardPage() {
           onNewTask={openNewTask}
           participantsInfoMap={participantsInfoMap}
           tags={tags ?? []}
+          currentUserId={(currentUser as { subject?: string } | null)?.subject}
+          showOnlyMyTasks={showOnlyMyTasks}
         />
         <TaskDialog
           open={dialogOpen}
@@ -217,6 +230,9 @@ export default function BoardPage() {
           participantIds={participantIds}
           participantsInfo={participantsInfo}
           availableTags={tags ?? []}
+          defaultAssigneeId={
+            showOnlyMyTasks ? (currentUser as { subject?: string } | null)?.subject : undefined
+          }
         />
         <ActivityDialog
           open={activityDialogOpen}

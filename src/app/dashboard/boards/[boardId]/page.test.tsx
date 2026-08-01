@@ -11,6 +11,8 @@ const {
   useMutationMock,
   replaceMock,
   getUsersPublicInfoMock,
+  kanbanBoardMock,
+  taskDialogMock,
 } = vi.hoisted(() => ({
   useParamsMock: vi.fn(),
   useRouterMock: vi.fn(),
@@ -19,6 +21,8 @@ const {
   useMutationMock: vi.fn(),
   replaceMock: vi.fn(),
   getUsersPublicInfoMock: vi.fn(),
+  kanbanBoardMock: vi.fn(),
+  taskDialogMock: vi.fn(),
 }));
 
 let boardResult: unknown;
@@ -81,25 +85,32 @@ vi.mock("@/components/ai-task-assistant-dialog", () => ({
     open ? <div>AiAssistantOpen</div> : null,
 }));
 vi.mock("@/components/task-dialog", () => ({
-  TaskDialog: ({ open }: { open: boolean }) => (open ? <div>TaskDialogOpen</div> : null),
+  TaskDialog: (props: { open: boolean }) => {
+    taskDialogMock(props);
+    return props.open ? <div>TaskDialogOpen</div> : null;
+  },
 }));
 vi.mock("@/components/kanban-board", () => ({
-  KanbanBoard: ({ onNewTask }: { onNewTask: () => void }) => (
-    <button type="button" onClick={onNewTask}>
-      Nuevo task
-    </button>
-  ),
+  KanbanBoard: (props: { onNewTask: () => void }) => {
+    kanbanBoardMock(props);
+    return (
+      <button type="button" onClick={props.onNewTask}>
+        Nuevo task
+      </button>
+    );
+  },
 }));
 vi.mock("@/components/ui/button", () => ({
   Button: ({
     children,
     onClick,
     asChild,
+    ...props
   }: { children: ReactNode; onClick?: () => void; asChild?: boolean }) =>
     asChild ? (
       <>{children}</>
     ) : (
-      <button type="button" onClick={onClick}>
+      <button type="button" onClick={onClick} {...props}>
         {children}
       </button>
     ),
@@ -164,5 +175,24 @@ describe("BoardPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Asistente IA" }));
     expect(screen.getByText("AiAssistantOpen")).toBeInTheDocument();
+  });
+
+  it("filters tasks assigned to the current user and preassigns new tasks", async () => {
+    render(<BoardPage />);
+
+    const filterButton = await screen.findByRole("button", { name: "Mis tareas" });
+    expect(filterButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(filterButton);
+
+    expect(filterButton).toHaveAttribute("aria-pressed", "true");
+    expect(kanbanBoardMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ currentUserId: "owner-1", showOnlyMyTasks: true })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Nuevo task" }));
+    expect(taskDialogMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ defaultAssigneeId: "owner-1", open: true })
+    );
   });
 });

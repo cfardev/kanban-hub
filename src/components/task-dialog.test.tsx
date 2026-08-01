@@ -117,6 +117,30 @@ describe("TaskDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("assigns a new task to the supplied default assignee", async () => {
+    render(
+      <TaskDialog
+        open
+        onOpenChange={vi.fn()}
+        task={null}
+        boardId={"board-1" as never}
+        participantIds={["u1"]}
+        participantsInfo={[]}
+        availableTags={[]}
+        defaultAssigneeId="u1"
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Título"), { target: { value: "Mi tarea" } });
+    fireEvent.click(screen.getByRole("button", { name: "Crear" }));
+
+    await waitFor(() => {
+      expect(createTaskMock).toHaveBeenCalledWith(
+        expect.objectContaining({ assignee_id: "u1", title: "Mi tarea" })
+      );
+    });
+  });
+
   it("updates and deletes task in edit mode", async () => {
     const onOpenChange = vi.fn();
     const task = {

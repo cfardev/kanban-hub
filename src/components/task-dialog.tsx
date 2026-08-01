@@ -75,6 +75,7 @@ type TaskDialogProps = {
   participantIds: string[];
   participantsInfo: ParticipantInfo[];
   availableTags: Doc<"tags">[];
+  defaultAssigneeId?: string;
 };
 
 /** Sentinel value for "unassigned"; Radix Select disallows value="". */
@@ -109,6 +110,7 @@ export function TaskDialog({
   participantIds,
   participantsInfo,
   availableTags,
+  defaultAssigneeId,
 }: TaskDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -136,11 +138,11 @@ export function TaskDialog({
         setTitle("");
         setDescription("");
         setStatus(undefined);
-        setAssigneeId(UNASSIGNED_VALUE);
+        setAssigneeId(defaultAssigneeId ?? UNASSIGNED_VALUE);
         setSelectedTagIds([]);
       }
     }
-  }, [open, task]);
+  }, [defaultAssigneeId, open, task]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
