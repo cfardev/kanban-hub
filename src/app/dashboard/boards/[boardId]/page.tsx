@@ -172,9 +172,13 @@ export default function BoardPage() {
                 Participantes
               </Button>
               <Button
-                variant={showOnlyMyTasks ? "secondary" : "outline"}
+                variant="outline"
                 size="sm"
-                className="shrink-0 cursor-pointer"
+                className={
+                  showOnlyMyTasks
+                    ? "shrink-0 cursor-pointer border-slate-900 bg-slate-900 text-white hover:border-slate-800 hover:bg-slate-800 hover:text-white"
+                    : "shrink-0 cursor-pointer"
+                }
                 aria-pressed={showOnlyMyTasks}
                 onClick={() => setShowOnlyMyTasks((current) => !current)}
               >
