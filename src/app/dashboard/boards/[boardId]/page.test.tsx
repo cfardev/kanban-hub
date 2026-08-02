@@ -13,6 +13,7 @@ const {
   getUsersPublicInfoMock,
   kanbanBoardMock,
   taskDialogMock,
+  writeTextMock,
 } = vi.hoisted(() => ({
   useParamsMock: vi.fn(),
   useRouterMock: vi.fn(),
@@ -23,6 +24,7 @@ const {
   getUsersPublicInfoMock: vi.fn(),
   kanbanBoardMock: vi.fn(),
   taskDialogMock: vi.fn(),
+  writeTextMock: vi.fn(),
 }));
 
 let boardResult: unknown;
@@ -149,6 +151,11 @@ describe("BoardPage", () => {
     ]);
     useMutationMock.mockReturnValue(vi.fn());
     useActionMock.mockReturnValue(getUsersPublicInfoMock);
+    writeTextMock.mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: writeTextMock },
+    });
   });
 
   it("redirects back to dashboard when board does not exist", async () => {
@@ -175,6 +182,55 @@ describe("BoardPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Asistente IA" }));
     expect(screen.getByText("AiAssistantOpen")).toBeInTheDocument();
+  });
+
+  it("copies Markdown for every board task even when my tasks is active", async () => {
+    tasksResult = [
+      {
+        _id: "task-1",
+        _creationTime: 0,
+        board_id: "board-1",
+        title: "Tarea propia",
+        status: "por_empezar",
+        position: 0,
+        assignee_id: "owner-1",
+        created_at: 1,
+        updated_at: 1,
+      },
+      {
+        _id: "task-2",
+        _creationTime: 0,
+        board_id: "board-1",
+        title: "Tarea del equipo",
+        status: "en_curso",
+        position: 0,
+        assignee_id: "u2",
+        created_at: 2,
+        updated_at: 2,
+      },
+    ];
+
+    render(<BoardPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Mis tareas" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copiar Markdown" }));
+
+    await waitFor(() => {
+      expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining("### Tarea propia"));
+    });
+    expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining("### Tarea del equipo"));
+    expect(await screen.findByRole("button", { name: "Copiado" })).toBeInTheDocument();
+  });
+
+  it("announces a clipboard failure", async () => {
+    writeTextMock.mockRejectedValueOnce(new Error("Permission denied"));
+    render(<BoardPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Copiar Markdown" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudo copiar el Markdown al portapapeles"
+    );
   });
 
   it("filters tasks assigned to the current user and preassigns new tasks", async () => {

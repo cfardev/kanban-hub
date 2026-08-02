@@ -13,8 +13,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
+import { formatBoardAsMarkdown } from "@/lib/board-markdown";
 import { useAction, useQuery } from "convex/react";
-import { ArrowLeft, Clock, UserRound, Users } from "lucide-react";
+import { ArrowLeft, Check, Clock, Copy, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -43,6 +44,7 @@ export default function BoardPage() {
   const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [participantsInfo, setParticipantsInfo] = useState<ParticipantInfo[]>([]);
+  const [copyState, setCopyState] = useState<"idle" | "success" | "error">("idle");
 
   useEffect(() => {
     if (participantIds !== undefined && participantIds.length > 0) {
@@ -71,6 +73,21 @@ export default function BoardPage() {
   const openTask = (task: Task) => {
     setSelectedTask(task);
     setDialogOpen(true);
+  };
+
+  const handleCopyMarkdown = async () => {
+    try {
+      if (!board || !tasks || !tags || !navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+
+      await navigator.clipboard.writeText(
+        formatBoardAsMarkdown({ board, tasks, tags, participantsInfoMap })
+      );
+      setCopyState("success");
+    } catch {
+      setCopyState("error");
+    }
   };
 
   useEffect(() => {
@@ -174,6 +191,19 @@ export default function BoardPage() {
               <Button
                 variant="outline"
                 size="sm"
+                className="shrink-0 cursor-pointer"
+                onClick={handleCopyMarkdown}
+              >
+                {copyState === "success" ? (
+                  <Check className="mr-1.5 h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                {copyState === "success" ? "Copiado" : "Copiar Markdown"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 className={
                   showOnlyMyTasks
                     ? "shrink-0 cursor-pointer border-slate-900 bg-slate-900 text-white hover:border-slate-800 hover:bg-slate-800 hover:text-white"
@@ -206,6 +236,17 @@ export default function BoardPage() {
             </div>
           </div>
         </div>
+        <p
+          className="sr-only"
+          aria-live="polite"
+          role={copyState === "error" ? "alert" : undefined}
+        >
+          {copyState === "success"
+            ? "Markdown copiado al portapapeles"
+            : copyState === "error"
+              ? "No se pudo copiar el Markdown al portapapeles"
+              : ""}
+        </p>
         <ShareBoardDialog
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
