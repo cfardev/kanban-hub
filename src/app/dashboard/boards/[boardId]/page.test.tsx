@@ -60,10 +60,6 @@ vi.mock("@/convex/_generated/api", () => ({
       getCurrentUser: "auth.getCurrentUser",
       getUsersPublicInfo: "auth.getUsersPublicInfo",
     },
-    ai: {
-      generateTaskSuggestions: "ai.generateTaskSuggestions",
-      createTasksFromSuggestions: "ai.createTasksFromSuggestions",
-    },
   },
 }));
 
@@ -81,10 +77,6 @@ vi.mock("@/components/share-board-dialog", () => ({
 }));
 vi.mock("@/components/activity/activity-dialog", () => ({
   ActivityDialog: ({ open }: { open: boolean }) => (open ? <div>ActivityOpen</div> : null),
-}));
-vi.mock("@/components/ai-task-assistant-dialog", () => ({
-  AiTaskAssistantDialog: ({ open }: { open: boolean }) =>
-    open ? <div>AiAssistantOpen</div> : null,
 }));
 vi.mock("@/components/task-dialog", () => ({
   TaskDialog: (props: { open: boolean }) => {
@@ -175,13 +167,6 @@ describe("BoardPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Nuevo task" }));
     expect(screen.getByText("TaskDialogOpen")).toBeInTheDocument();
-  });
-
-  it("opens AI assistant dialog", async () => {
-    render(<BoardPage />);
-
-    fireEvent.click(await screen.findByRole("button", { name: "Asistente IA" }));
-    expect(screen.getByText("AiAssistantOpen")).toBeInTheDocument();
   });
 
   it("copies Markdown for every board task even when my tasks is active", async () => {

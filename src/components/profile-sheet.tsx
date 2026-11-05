@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { authClient } from "@/lib/auth-client";
 import { useMutation, useQuery } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -45,6 +46,18 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [tokenCopied, setTokenCopied] = useState<boolean | null>(null);
+
+  const copyMcpToken = async () => {
+    try {
+      const { data } = await authClient.getSession();
+      if (!data?.session.token) throw new Error("No session");
+      await navigator.clipboard.writeText(data.session.token);
+      setTokenCopied(true);
+    } catch {
+      setTokenCopied(false);
+    }
+  };
 
   const displayName = user?.name ?? user?.email ?? "";
   const userImage =
@@ -180,6 +193,20 @@ export function ProfileSheet({ open, onOpenChange }: ProfileSheetProps) {
               "Guardar"
             )}
           </Button>
+
+          <div className="grid gap-2 border-t pt-4">
+            <Label>Servidor MCP</Label>
+            <p className="text-muted-foreground text-xs">
+              Copia tu token para usarlo como KANBAN_TOKEN. Deja de funcionar si cierras sesión.
+            </p>
+            <Button variant="outline" className="cursor-pointer" onClick={copyMcpToken}>
+              Copiar token MCP
+            </Button>
+            <p className="text-xs" aria-live="polite">
+              {tokenCopied === true && "Token copiado"}
+              {tokenCopied === false && "No se pudo copiar el token"}
+            </p>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
