@@ -38,10 +38,6 @@ GOOGLE_CLIENT_SECRET=
 
 # Optional (base URL alias)
 SITE_URL=http://localhost:3000
-
-# Optional (AI assistant with OpenRouter)
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=deepseek/deepseek-v3.2
 ```
 
 4. Start the app.
@@ -60,14 +56,39 @@ Open `http://localhost:3000`.
 - `BETTER_AUTH_BASE_URL`: app base URL used by auth callbacks.
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: required only if you want Google login.
 - `SITE_URL`: optional fallback for base URL/trusted origins.
-- `OPENROUTER_API_KEY`: API key for OpenRouter (required to use the AI task assistant).
-- `OPENROUTER_MODEL`: optional model override (default: `deepseek/deepseek-v3.2`).
 
 Tip: generate `BETTER_AUTH_SECRET` with:
 
 ```bash
 openssl rand -base64 32
 ```
+
+## MCP Server
+
+AI is driven from an MCP client (Claude Code, Claude Desktop, Cursor…) instead of an in-app assistant. The server in `mcp/server.ts` acts as your user and exposes: `list_boards`, `get_board`, `create_task`, `update_task`, `delete_task`, `add_subtask`, `add_comment`.
+
+1. Sign in to the app, open your profile and click **Copiar token MCP**.
+2. Register the server in your client (requires Node 22.18+ to run TypeScript directly):
+
+```json
+{
+  "mcpServers": {
+    "kanban-hub": {
+      "command": "node",
+      "args": ["/absolute/path/to/kanban-hub/mcp/server.ts"],
+      "env": {
+        "KANBAN_URL": "http://localhost:3000",
+        "CONVEX_URL": "https://<your-deployment>.convex.cloud",
+        "KANBAN_TOKEN": "<token from step 1>"
+      }
+    }
+  }
+}
+```
+
+Claude Code: `claude mcp add kanban-hub -e KANBAN_URL=... -e CONVEX_URL=... -e KANBAN_TOKEN=... -- node /absolute/path/to/kanban-hub/mcp/server.ts`
+
+The token is your Better Auth session: it stops working when you sign out or the session expires; copy a new one then.
 
 ## Useful Scripts
 

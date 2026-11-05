@@ -4,6 +4,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
+import { bearer } from "better-auth/plugins";
 import { components } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
@@ -64,6 +65,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
     },
     ...(socialProviders && { socialProviders }),
     plugins: [
+      // Lets the MCP server authenticate with `Authorization: Bearer <session token>`.
+      bearer(),
       convex({
         authConfig,
         jwt: {
